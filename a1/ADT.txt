@@ -1,15 +1,27 @@
 BCode:
-    a)
-    b)
-    c)
+    a) BCode represents a building code, which is an value-based ADT. We will be using BCodes as label values for our building ADTs, they are immutable and objects with the same BCode are considered to be identical, so BCode itself is a value based ADT.
+    b) Build the BCode ADT as value-based helps us provide equality, assignment, etc. operators. They can be useful when comparing them or assigning them to specific buildings' atributes.
+    c)  Default Contructor:
+        Destructor: Compiler-generated is acceptable since there aren't any special memory variables that need to be properly deallocated.
+        Copy Constructor: 
+        Assignemnt Operator:
+        Equality Operator:
 
-BCode:
-    a)
-    b)
-    c)
+Building:
+    a) Building is an entity-based ADT. It represents a real world entity, each building has a different identity and objects with the same attributes are not considered to be the same, which validates the Building ADT being an entity-based ADT.
+    b) The entity-based implementation of the building ADT prevents us from using value operators like comparison, assignment, etc. This helps the design of the ADT since each objects are uniquely identifiable and "copying a building" is not a realistic action. The entity-based implementation also prohibits copy contructors and type conversions which are both impractical following the specification of the building ADT.
+    c)  Default Contructor:
+        Destructor:
+        Copy Constructor:
+        Assignemnt Operator:
+        Equality Operator:
 
-BCode:
-    a)
-    b)
-    c)
+Collection:
+    a) Collection is an entity-based ADT. Although cloning a collection is possible, a cloned collection with the same set of buildings would still be a different collection than the original and are not equal. Moreover, a collection of real-world objects can be considered to represent a real-world entity. Hence collection is an entity-based ADT.
+    b) Keeping the entity-based design principles in mind, we can implement the cloning operation whilst prohibitting copy contructor, assignment and type conversions (a collection of buildings can only be a collection of buildings!). This way, we can make sure that all the operations on our collection ADT represents a real-world event, not an abstract one, which is the essence of entity-based ADTs.
+    c)  Default Contructor:
+        Destructor:
+        Copy Constructor:
+        Assignemnt Operator:
+        Equality Operator:
 
