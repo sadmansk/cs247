@@ -1,9 +1,36 @@
+#include <iostream>
+#include <string>
 
+using namespace std;
 //************************************************************************
 //* YOUR IMPLENTATION OF BCODE, BUILDING, COLLECTION HERE
 //************************************************************************
+class BCode {
+public:
+    BCode(const string&);
+    string code();
 
+private:
+    string code_;
+    static int const min_length_;
+    static int const max_length_;
+};
 
+BCode::BCode(const string& bcode) {
+    // do a range check on the string
+    if (bcode.length() < min_length_ || bcode.length() > max_length_)
+        exit(1);
+    code_(bcode);
+}
+
+string BCode::code() {
+    return code_;
+}
+
+// Building
+class Building {
+public:
+    Building(
 
 //===================================================================
 // Graph (of Buildings and Connectors)
