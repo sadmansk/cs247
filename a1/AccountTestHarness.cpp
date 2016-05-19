@@ -107,10 +107,11 @@ public:                                             // PUBLIC interface of Accou
 	virtual void bill () = 0;                       // decrements balance by monthly fee and the cost of using extra minutes
 	void pay (int amount);                          // increments balance by amount paid
 	virtual void print() const;                     // prints information about the account (e.g., account number, balance, minutes used this month
-private:
-    const AccountNo& account_no_;
-protected:
-    int balance_;
+private:                                            // PRIVATE data members
+    const AccountNo& account_no_;                   // holds the account no. attached to the account
+    int balance_;                                   // holds the current balance of the account
+protected:                                          // PROTECTED interface for use by derived classes
+    void setBalance(int balance);                   // mutator - sets the balance
 };
 
 
@@ -118,97 +119,112 @@ protected:
 //* YOUR IMPLENTATION OF ACCOUNT, CHEAP_ACCOUNT, EXPENSIVE_ACCOUNT HERE 
 //************************************************************************
 // Implementation of Account
+// Account Contructor
 Account::Account (const AccountNo& account_no) : account_no_(account_no) {
     balance_ = 0;
 }
 
+// accessor for Account balance
 int Account::balance() const {
     return balance_;
 }
 
+// prints the Account information
 void Account::print() const {
-    string is_neg = "$";
+    string dollar_sign = "$"; // get it??
     int pos_balance = balance_;
     if (balance_ < 0) {
-        is_neg = "-$";
+        dollar_sign = "-$"; // now you should get the joke
         pos_balance = (-1) * balance_;
     }
         
     cout << "  Account Number = " << account_no_ << endl;
-    cout << "  Balance = " << is_neg << pos_balance << endl;
+    cout << "  Balance = " << dollar_sign << pos_balance << endl;
 }
 
+// pays the amounts towards the Account balance
 void Account::pay(int amount) {
     balance_ += amount;
 }
 
-// Cheap Account
+// mutator for the Account balance for use by derived classes
+void Account::setBalance(int balance) {
+    balance_ = balance;
+}
 
+// Cheap Account
 class CheapAccount : public Account {
-public:
-    CheapAccount( const AccountNo& );
-    void call(int duration);
-    void bill();
-    void print() const;
-private:
-    int minutes_;
+public:                                         // PUBLIC interface of CheapAccount
+    explicit CheapAccount( const AccountNo& );  // constructor
+    void call(int duration);                    // records duration of a call in minutes
+    void bill();                                // decrements balance by monthly fee and the const of using extra minutes
+    void print() const;                         // prints information about the account
+private:                                        // PRIVATE data members of CheapAccount
+    int minutes_;                               // holds the number of minutes used in the current billing cycle
+    static int const maxMins_ = 250;            // holds the maximum minutes before overages
+    static int const monthlyBill_ = 25;         // holds the monthly bill
 };
 
 // Cheap Account implementation
+// constructor
 CheapAccount::CheapAccount (const AccountNo& acc_no) : Account(acc_no) {
     minutes_ = 0;
 }
 
+// prints Cheap Account information
 void CheapAccount::print() const {
     cout << "CheapAccount:" << endl;
     Account::print();
     cout << "  Minutes = " << minutes_ << endl;
 }
 
+// records the duration of a call in minutes
 void CheapAccount::call(int duration) {
     minutes_ += duration;
 }
 
+// bills the account for the current cycle
 void CheapAccount::bill() {
-    int bill = 25;
-    if (minutes_ > 250) {
-        bill += minutes_ - 250;
+    int bill = monthlyBill_;
+    if (minutes_ > maxMins_) {
+        bill += minutes_ - maxMins_;
     }
-
-    balance_ -= bill;
+    int new_balance = balance();
+    new_balance -= bill;
+    setBalance(new_balance);
     minutes_ = 0;
 }
 
 //Expensive Account
-
 class ExpensiveAccount : public Account {
-public:
-    ExpensiveAccount( const AccountNo& );
-    void call(int duration);
-    void bill();
-    void print() const;
+public:                                         // PUBLIC interface of ExpensiveAccount
+    explicit ExpensiveAccount(const AccountNo&);// constructor
+    void call(int duration);                    // empty function to override base's pure virtual function
+    void bill();                                // decrements balance by monthly fee
+    void print() const;                         // prints information about the account
 private:
+    static int const monthlyBill = 80;          // holds the monthly bill
 };
 
 // Expensive Account implementation
+// constructor
 ExpensiveAccount::ExpensiveAccount (const AccountNo& acc_no) : Account(acc_no) { }
 
+// prints Expensive Account information
 void ExpensiveAccount::print() const {
     cout << "ExpensiveAccount:" << endl;
     Account::print();
 }
 
+// empty call function for overriding the pure virtual function
 void ExpensiveAccount::call(int duration) { }
 
+// bills the account for the current cycle
 void ExpensiveAccount::bill() {
-    int bill = 80;
-    balance_ -= bill;
+    int new_balance = balance();
+    new_balance -= monthlyBill;
+    setBalance(new_balance);
 }
-
-
-    
-//Expensive Account implementation
-
 
 //************************************************************************
 //  Helper variables and functions for test harness
