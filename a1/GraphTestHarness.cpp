@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <fstream>
 
 using namespace std;
 //************************************************************************
@@ -37,6 +38,41 @@ bool operator== (const BCode& a, const BCode& b) {
     return a.code().compare(b.code()) == 0;
 }
 
+bool operator< (const BCode& a, const BCode& b) {
+    for (int i = 0; i < a.code().length() && i < b.code().length(); i++) {
+        // compare character by character, assumes all characters are upper case for now
+        if (a.code()[i] < b.code()[i]) {
+            return true;
+        }
+        else if (a.code()[i] > b.code()[i]) {
+            return false;
+        }
+    }
+    // if one of the codes run out of characters, the bigger string is considered greater
+    return a.code().length() < b.code().length();
+}
+
+bool operator!= (const BCode& a, const BCode& b) {
+    return !(a == b);
+}
+
+bool operator> (const BCode& a, const BCode& b) {
+    return (a != b) && (b < a);
+}
+
+bool operator>= (const BCode& a, const BCode& b) {
+    return (a > b) || (a == b);
+}
+
+bool operator<= (const BCode& a, const BCode& b) {
+    return (a < b) || (a == b);
+}
+
+// operator overloads
+ostream& operator<< (ostream& os, const BCode& a) {
+    os << a.code();
+    return os;
+}
 
 // Building
 class Building {
@@ -62,6 +98,12 @@ BCode Building::bcode() const {
     return bcode_;
 }
 
+// operator overloads
+ostream& operator<< (ostream& os, const Building& a) {
+    os << a.bcode() << "\t" << a.name();
+    return os;
+}
+
 
 //Collection
 class Collection {
@@ -69,7 +111,8 @@ public:
     Collection();
     ~Collection();
     void insert(const BCode&, const string&);
-    Building* findBuilding(const BCode&);
+    void remove(const BCode&);
+    Building* findBuilding(const BCode&) const;
 private:
     struct Node {
         Building* value;
@@ -85,22 +128,38 @@ Collection::Collection() {
 
 // destructor
 Collection::~Collection() {
-    Node* temp = buildings_;
-    while (temp) {
+    Node* temp;
+    while (buildings_) {
+        temp = buildings_->next;
+        delete buildings_->value;
+        buildings_->value = NULL;
+        delete buildings_;
+        buildings_ = temp;
+        temp = NULL;
     }
+    delete temp;
 }
 
 void Collection::insert(const BCode& bcode, const string& name) {
-    Node* temp = buildings_;
-    while (temp != NULL) {
-        temp = temp->next;
-    }
-    temp = new Node();
+    Node* temp = new Node();
     temp->value = new Building(bcode, name);
-    temp->next = NULL;
+    temp->next = buildings_;
+    buildings_ = temp;
+    temp = NULL;
 }
 
-Building* Collection::findBuilding(const BCode& bcode) {
+void Collection::remove(const BCode& bcode) {
+    // indirect points to the address of the node we want to remove
+    Node** indirect = &buildings_;
+    
+    while ((*indirect)->value->bcode() != bcode)
+        indirect = &(*indirect)->next;
+
+    // replace it with whatever the next pointer is
+    *indirect = (*indirect)->next;
+}
+
+Building* Collection::findBuilding(const BCode& bcode) const {
     // Go through the collection
     Node* temp = buildings_;
     
@@ -138,24 +197,23 @@ public:
     Graph& operator= ( const Graph& );                      // assignment operator for graph objects
     bool operator== ( const Graph& ) const;                 // equality operator for graph objects
 private:
+    struct Edge;    //forward declare edge
     struct Node {
-        struct Edge;    //forward declare edge
-        Building* src;  // source building
+        Building* value;  // source building
         Edge* paths;    // list of paths going out the building
+        Node* next;
     };
 
     struct Edge {
         string type;    // the type of edge (e.g. bridge, tunnel, etc.)
-        Node* from;      // source node
-        Node* to;     // destination nodes
-    };
-
-    struct NodeList {
-        Node value;
-        NodeList* next;
+        Node* to;     // destination building
+        Edge* next;
     };
     
-    NodeList* nodes_;
+    Node* nodes_;
+    Node* findNode(const string&) const;
+    void addEdge(Node*, Node*, string);
+    void removeEdge(Node*, string);
 };
 
 //************************************************************************
@@ -167,14 +225,136 @@ Graph::Graph() {
 }
 
 Graph::~Graph() {}
+    
 
 Graph::Graph(const Graph&) {
 
 }
 
 void Graph::addNode(Building* building) {
+    //declare a new node
+    Node* new_node = new Node();
+    new_node->value = building;
+    new_node->paths = NULL;
+    new_node->next = NULL;
+    
+    Node* temp = nodes_;
+    Node* prev = NULL;
+    while (temp != NULL) {
+        if (building->bcode() < temp->value->bcode()) {
+            break;
+        }
+        prev = temp;
+        temp = temp->next;
+    }
+    // if its the first element
+    if (prev == NULL) {
+        new_node->next = temp;
+        nodes_ = new_node;
+    }
+    else {
+        prev->next = new_node;
+        new_node->next = temp;
+    }
+    prev = NULL;
+    temp = NULL;
 }
-/*
+
+void Graph::removeNode(string bcode) {
+    Node** indirect = &nodes_;
+
+    while ((*indirect)->value->bcode() != bcode)
+        indirect = &(*indirect)->next;
+
+    *indirect = (*indirect)->next;
+}
+
+Building* Graph::findBuilding(string bcode) const {
+    Node* node = findNode(bcode);
+    if (node != NULL) {
+        return node->value;
+    }
+    return NULL;
+}
+        
+void Graph::addEdge(string code1, string code2, string connector) {
+    // store the two nodes corresponding to the bcodes
+    Node* node1 = findNode(code1);
+    Node* node2 = findNode(code2);
+
+    // first add edge from 1 to 2
+    addEdge(node1, node2, connector);
+
+    // now add edge from 2 to 1
+    addEdge(node2, node1, connector);
+}
+
+void Graph::removeEdge(string code1, string code2) {
+    Node* node1 = findNode(code1);
+    Node* node2 = findNode(code2);
+
+    // first remove edge from 1 to 2
+    removeEdge(node1, code2);
+
+    // now remove edge from 2 to 1
+    removeEdge(node2, code1);
+}
+
+void Graph::printPaths(string code1, string code2, const bool one_line) const {
+
+}
+
+void Graph::deleteGraph() {
+
+}    
+
+Graph::Node* Graph::findNode(const string& bcode) const {
+    Node* temp = nodes_;
+    
+    while (temp) {
+        if (temp->value->bcode() == bcode) {
+            return temp;
+        }
+        temp = temp->next;
+    }
+    temp = NULL;
+    delete temp;
+    // return null pointer if building can't be found
+    return NULL;
+}
+    
+void Graph::addEdge(Node* src, Node* dest, string connector) {
+    Edge* new_edge = new Edge();
+    new_edge->type = connector;
+    new_edge->to = dest;
+    new_edge->next = src->paths;
+    src->paths = new_edge;
+    new_edge = NULL;
+}
+
+void Graph::removeEdge(Node* src, string bcode) {
+    Edge** indirect = &(src->paths);
+
+    while ((*indirect)->to->value->bcode() != bcode)
+        indirect = &(*indirect)->next;
+
+    *indirect = (*indirect)->next;
+}
+
+// Graph operators
+ostream& operator<< (ostream& os, const Graph&) {
+    return os;
+}
+
+Graph& Graph::operator= (const Graph& a) {
+    return a;
+}
+
+bool Graph::operator== (const Graph&) const {
+    return true;
+}
+
+
 //************************************************************************
 //  Test Harness Helper functions
 //************************************************************************
@@ -426,4 +606,4 @@ int main( int argc, char *argv[] ) {
     } // while cin OK
 
 }
-*/
+
