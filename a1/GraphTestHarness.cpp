@@ -301,7 +301,6 @@ void Graph::removeEdge(string code1, string code2) {
 }
 
 void Graph::printPaths(string code1, string code2, const bool one_line) const {
-
 }
 
 void Graph::deleteGraph() {
@@ -342,7 +341,25 @@ void Graph::removeEdge(Node* src, string bcode) {
 }
 
 // Graph operators
-ostream& operator<< (ostream& os, const Graph&) {
+ostream& operator<< (ostream& os, const Graph& a) {
+    //traverse the nodes list
+    Graph::Node* walk = a.nodes_;
+    while (walk) {
+        os << walk->value << "\n\tConnects to: "; // print the building info
+        // print the paths
+        Graph::Edge* walk_edge = walk->paths;
+        while (walk_edge != NULL) {
+            os << walk_edge->to->value->bcode() << " (" << walk_edge->type << ")";
+            walk_edge = walk_edge->next;
+            if (walk_edge != NULL) {
+                os << ", ";
+            }
+            else {
+                os << endl << endl;
+            }
+        }
+        walk = walk->next;
+    }
     return os;
 }
 
