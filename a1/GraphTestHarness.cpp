@@ -228,7 +228,7 @@ Graph::~Graph() {}
     
 
 Graph::Graph(const Graph&) {
-
+    nodes_ = NULL;
 }
 
 void Graph::addNode(Building* building) {
@@ -364,7 +364,8 @@ ostream& operator<< (ostream& os, const Graph& a) {
 }
 
 Graph& Graph::operator= (const Graph& a) {
-    return a;
+    Graph n(a);
+    return n;
 }
 
 bool Graph::operator== (const Graph&) const {
