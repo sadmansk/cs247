@@ -227,8 +227,48 @@ Graph::Graph() {
 Graph::~Graph() {}
     
 
-Graph::Graph(const Graph&) {
-    nodes_ = NULL;
+Graph::Graph(const Graph& g) {
+    // set the nodes list to null if the nodes_ in g are NULL
+    if (g.nodes_ == NULL) {
+        nodes_ = NULL;
+        return;
+    }
+    Node** walk = &nodes_;
+    Node* p_walk = g.nodes_;
+
+    while (p_walk != NULL) {
+        *walk = new Node();
+        // building shouldn't be deep copied
+        (*walk)->value = p_walk->value;
+
+        // declare paths as null for now
+        (*walk)->paths = NULL;
+        (*walk)->next = NULL;
+        walk = &(*walk)->next;
+        p_walk = p_walk->next;
+    }
+    walk = &nodes_;
+    p_walk = g.nodes_;
+    //now go through the list of nodes and add their paths
+    while (*walk != NULL && p_walk != NULL) {
+        Edge* p_edge_walk = p_walk->paths;
+        Edge** edge_walk = &((*walk)->paths);
+        while (p_edge_walk != NULL) {
+            *edge_walk = new Edge();
+            (*edge_walk)->type = p_edge_walk->type;
+            (*edge_walk)->to = findNode((p_edge_walk->to->value->bcode()).code());
+            (*edge_walk)->next = NULL;
+            edge_walk = &(*edge_walk)->next;
+            p_edge_walk = p_edge_walk->next;
+        }
+        edge_walk = NULL;
+        p_edge_walk = NULL;
+        walk = &(*walk)->next;
+        p_walk = p_walk->next;
+    }
+    walk = NULL;
+    p_walk = NULL;
+
 }
 
 void Graph::addNode(Building* building) {
@@ -301,22 +341,22 @@ void Graph::removeEdge(string code1, string code2) {
 }
 
 void Graph::printPaths(string code1, string code2, const bool one_line) const {
+
 }
 
 void Graph::deleteGraph() {
-
+    
 }    
 
-Graph::Node* Graph::findNode(const string& bcode) const {
+Graph::Node* Graph::findNode(const string& code) const {
     Node* temp = nodes_;
-    
-    while (temp) {
+    BCode bcode(code);
+    while (temp != NULL) {
         if (temp->value->bcode() == bcode) {
             return temp;
         }
         temp = temp->next;
     }
-    temp = NULL;
     delete temp;
     // return null pointer if building can't be found
     return NULL;
@@ -365,8 +405,8 @@ ostream& operator<< (ostream& os, const Graph& a) {
 }
 
 Graph& Graph::operator= (const Graph& a) {
-    Graph n(a);
-    return n;
+    Graph* n = new Graph(a);
+    return *n;
 }
 
 bool Graph::operator== (const Graph&) const {
