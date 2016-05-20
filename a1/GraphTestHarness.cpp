@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 #include <string>
 
 using namespace std;
@@ -7,30 +8,115 @@ using namespace std;
 //************************************************************************
 class BCode {
 public:
-    BCode(const string&);
-    string code();
+    BCode(const string&);                                       // constructor
+    string code() const;
 
 private:
     string code_;
-    static int const min_length_;
-    static int const max_length_;
+    static int const min_length_ = 1;
+    static int const max_length_ = 3;
 };
 
 BCode::BCode(const string& bcode) {
     // do a range check on the string
     if (bcode.length() < min_length_ || bcode.length() > max_length_)
         exit(1);
-    code_(bcode);
+    // check if the starting character is a capital letter
+    if (bcode[0] < 'A' || bcode[0] > 'Z')
+        exit(1);
+
+    code_ = bcode;
 }
 
-string BCode::code() {
+string BCode::code() const {
     return code_;
 }
+
+// comparison operators
+bool operator== (const BCode& a, const BCode& b) {
+    return a.code().compare(b.code()) == 0;
+}
+
 
 // Building
 class Building {
 public:
-    Building(
+    Building(const BCode&, const string&);
+    string name() const;
+    BCode bcode() const;
+
+private:
+    BCode bcode_;
+    string name_;
+};
+
+// constructor
+Building::Building(const BCode& bcode, const string& name)
+    : bcode_(bcode), name_(name) {}
+
+string Building::name() const {
+    return name_;
+}
+
+BCode Building::bcode() const {
+    return bcode_;
+}
+
+
+//Collection
+class Collection {
+public:
+    Collection();
+    ~Collection();
+    void insert(const BCode&, const string&);
+    Building* findBuilding(const BCode&);
+private:
+    struct Node {
+        Building* value;
+        Node* next;
+    };
+    Node* buildings_;
+};
+
+// constructor
+Collection::Collection() {
+    buildings_ = NULL;
+}
+
+// destructor
+Collection::~Collection() {
+    Node* temp = buildings_;
+    while (temp) {
+    }
+}
+
+void Collection::insert(const BCode& bcode, const string& name) {
+    Node* temp = buildings_;
+    while (temp != NULL) {
+        temp = temp->next;
+    }
+    temp = new Node();
+    temp->value = new Building(bcode, name);
+    temp->next = NULL;
+}
+
+Building* Collection::findBuilding(const BCode& bcode) {
+    // Go through the collection
+    Node* temp = buildings_;
+    
+    while (temp) {
+        if (temp->value->bcode() == bcode) {
+            return temp->value;
+        }
+        temp = temp->next;
+    }
+    temp = NULL;
+    delete temp;
+    // return null pointer if building can't be found
+    return NULL;
+}
+
+
 
 //===================================================================
 // Graph (of Buildings and Connectors)
@@ -51,13 +137,44 @@ public:
     friend ostream& operator<< ( ostream&, const Graph& );  // insertion operator (insert graph into output stream)
     Graph& operator= ( const Graph& );                      // assignment operator for graph objects
     bool operator== ( const Graph& ) const;                 // equality operator for graph objects
+private:
+    struct Node {
+        struct Edge;    //forward declare edge
+        Building* src;  // source building
+        Edge* paths;    // list of paths going out the building
+    };
+
+    struct Edge {
+        string type;    // the type of edge (e.g. bridge, tunnel, etc.)
+        Node* from;      // source node
+        Node* to;     // destination nodes
+    };
+
+    struct NodeList {
+        Node value;
+        NodeList* next;
+    };
+    
+    NodeList* nodes_;
 };
 
 //************************************************************************
 //* YOUR IMPLENTATION OF GRAPH HERE
 //************************************************************************
+// constructor
+Graph::Graph() {
+    nodes_ = NULL;
+}
 
+Graph::~Graph() {}
 
+Graph::Graph(const Graph&) {
+
+}
+
+void Graph::addNode(Building* building) {
+}
+/*
 //************************************************************************
 //  Test Harness Helper functions
 //************************************************************************
@@ -309,3 +426,4 @@ int main( int argc, char *argv[] ) {
     } // while cin OK
 
 }
+*/
