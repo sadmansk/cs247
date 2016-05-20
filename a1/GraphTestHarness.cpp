@@ -224,7 +224,10 @@ Graph::Graph() {
     nodes_ = NULL;
 }
 
-Graph::~Graph() {}
+Graph::~Graph() {
+    deleteGraph();
+    delete nodes_;
+}
     
 
 Graph::Graph(const Graph& g) {
@@ -305,6 +308,8 @@ void Graph::removeNode(string bcode) {
 
     while ((*indirect)->value->bcode() != bcode)
         indirect = &(*indirect)->next;
+    
+    // clear out node members
 
     *indirect = (*indirect)->next;
 }
@@ -345,7 +350,9 @@ void Graph::printPaths(string code1, string code2, const bool one_line) const {
 }
 
 void Graph::deleteGraph() {
-    
+    while (nodes_ != NULL) {
+        removeNode(nodes_);
+    }
 }    
 
 Graph::Node* Graph::findNode(const string& code) const {
@@ -377,8 +384,10 @@ void Graph::removeEdge(Node* src, string bcode) {
     while ((*indirect)->to->value->bcode() != bcode)
         indirect = &(*indirect)->next;
 
+    (*indirect)->to = NULL;
     *indirect = (*indirect)->next;
 }
+
 
 // Graph operators
 ostream& operator<< (ostream& os, const Graph& a) {
