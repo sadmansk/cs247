@@ -345,19 +345,20 @@ ostream& operator<< (ostream& os, const Graph& a) {
     //traverse the nodes list
     Graph::Node* walk = a.nodes_;
     while (walk) {
-        os << walk->value << "\n\tConnects to: "; // print the building info
+        os << *(walk->value); // print the building info
         // print the paths
         Graph::Edge* walk_edge = walk->paths;
+        if (walk_edge != NULL) {
+            os << "\n\tConnects to: ";
+        }
         while (walk_edge != NULL) {
             os << walk_edge->to->value->bcode() << " (" << walk_edge->type << ")";
             walk_edge = walk_edge->next;
             if (walk_edge != NULL) {
                 os << ", ";
             }
-            else {
-                os << endl << endl;
-            }
         }
+        os << endl << endl;
         walk = walk->next;
     }
     return os;

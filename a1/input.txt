@@ -1,0 +1,15 @@
+b DC Davis Centre
+b MC Math and Computing
+b M3 Mathematics 3
+b C2 Chemistry 2
+n DC
+n MC
+n M3
+n C2
+g
+e MC M3 bridge
+e DC M3 bridge
+e C2 DC bridge
+e C2 MC tunnel
+g
+p DC MC true
