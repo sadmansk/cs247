@@ -71,7 +71,10 @@ bool operator<= (const BCode& a, const BCode& b) {
 
 // operator overloads
 ostream& operator<< (ostream& os, const BCode& a) {
-    os << a.code(); return os; } 
+    os << a.code();
+    return os;
+}
+
 // Building
 class Building {
 public:
@@ -156,14 +159,11 @@ void Collection::remove(const BCode& bcode) {
     // indirect points to the address of the node we want to remove
     Node** indirect = &buildings_;
     
-    while ((*indirect)->value->bcode() != bcode || (*indirect) != NULL)
+    while ((*indirect)->value->bcode() != bcode)
         indirect = &(*indirect)->next;
-    
+
     // replace it with whatever the next pointer is
-    if (*indirect != NULL) {
-        delete (*indirect)->value;
-        *indirect = (*indirect)->next;
-    }
+    *indirect = (*indirect)->next;
 }
 
 Building* Collection::findBuilding(const BCode& bcode) const {
@@ -402,30 +402,22 @@ void Graph::addEdge(Node* src, Node* dest, const string& connector) {
 void Graph::removeEdge(Node* src, const string& bcode) {
     Edge** indirect = &(src->paths);
 
-    while ((*indirect)->to->value->bcode() != bcode || *indirect != NULL)
+    while ((*indirect)->to->value->bcode() != bcode)
         indirect = &(*indirect)->next;
 
-    if (*indirect != NULL) {
-        (*indirect)->to = NULL; //clear the reference to the building pointer
-        *indirect = (*indirect)->next;
-    }
+    (*indirect)->to = NULL; //clear the reference to the building pointer
+    *indirect = (*indirect)->next;
 }
 
 void Graph::removeNode(Node* node) {
     Node** indirect = &nodes_;
 
-    while (*indirect != node || *indirect != NULL)
+    while (*indirect != node)
         indirect = &(*indirect)->next;
     
     // remove node members
-    if (*indirect != NULL) {
-        while ((*indirect)->paths != NULL) {
-            //get rid of all the nodes attached to this node
-            removeEdge((*indirect)->paths->to->value->bcode().code(), (*indirect)->value->bcode().code());
-        }
-        (*indirect)->value;
-        *indirect = node->next;
-    }
+
+    *indirect = node->next;
 }
 
 bool Graph::findPath(Collection* discovered, Node* start, const string& dest) const {
@@ -483,7 +475,6 @@ ostream& operator<< (ostream& os, const Graph& a) {
 }
 
 Graph& Graph::operator= (const Graph& a) {
-    deleteGraph();
     Graph* n = new Graph(a);
     return *n;
 }
