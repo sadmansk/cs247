@@ -71,10 +71,7 @@ bool operator<= (const BCode& a, const BCode& b) {
 
 // operator overloads
 ostream& operator<< (ostream& os, const BCode& a) {
-    os << a.code();
-    return os;
-}
-
+    os << a.code(); return os; } 
 // Building
 class Building {
 public:
@@ -159,11 +156,14 @@ void Collection::remove(const BCode& bcode) {
     // indirect points to the address of the node we want to remove
     Node** indirect = &buildings_;
     
-    while ((*indirect)->value->bcode() != bcode)
+    while ((*indirect)->value->bcode() != bcode || (*indirect) != NULL)
         indirect = &(*indirect)->next;
-
+    
     // replace it with whatever the next pointer is
-    *indirect = (*indirect)->next;
+    if (*indirect != NULL) {
+        delete (*indirect)->value;
+        *indirect = (*indirect)->next;
+    }
 }
 
 Building* Collection::findBuilding(const BCode& bcode) const {
@@ -222,6 +222,7 @@ private:
     void addEdge(Node*, Node*, const string&);
     void removeEdge(Node*, const string&);
     void removeNode(Node*);
+    void removePaths(Node*);
     bool findPath(Collection*, Node*, const string&) const;
 };
 
@@ -340,7 +341,6 @@ void Graph::addEdge(string code1, string code2, string connector) {
 void Graph::removeEdge(string code1, string code2) {
     Node* node1 = findNode(code1);
     Node* node2 = findNode(code2);
-
     // first remove edge from 1 to 2
     removeEdge(node1, code2);
 
@@ -361,7 +361,6 @@ void Graph::printPaths(string code1, string code2, const bool one_line) const {
         if (code1.compare(walk->to->value->bcode().code()) == 0) {
             cout << "\t" << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
         }
-            
         else if (findPath(discovered_nodes, walk->to, code1)) {
             //print the first edge
             cout << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
@@ -400,25 +399,54 @@ void Graph::addEdge(Node* src, Node* dest, const string& connector) {
 }
 
 void Graph::removeEdge(Node* src, const string& bcode) {
-    Edge** indirect = &(src->paths);
+    Edge* walk = src->paths;
+    Edge* prev = NULL;
 
-    while ((*indirect)->to->value->bcode() != bcode)
-        indirect = &(*indirect)->next;
+    while (walk != NULL) {
+        if (walk->to->value->bcode().code().compare(bcode) == 0) {
+            break;
+        }
+        prev = walk;
+        walk = walk->next;
+    }
 
-    (*indirect)->to = NULL; //clear the reference to the building pointer
-    *indirect = (*indirect)->next;
+    walk->to = NULL; //clear the reference to the building pointer
+    if (prev != NULL) {
+        prev->next = walk->next;
+    }
+    else {
+        src->paths = walk->next;
+    }
 }
 
 void Graph::removeNode(Node* node) {
-    Node** indirect = &nodes_;
+    Node* walk = nodes_;
+    Node* prev = NULL;
 
-    while (*indirect != node)
-        indirect = &(*indirect)->next;
-    
+    while (walk != NULL && walk != node) {
+        prev = walk;
+        walk = walk->next;
+    }
+    removePaths(walk);
+    walk->value = NULL;
     // remove node members
-
-    *indirect = node->next;
+    if (prev != NULL) {
+        prev->next = walk->next;
+    }
+    else {
+        nodes_ = walk->next;
+    }
+    delete walk;
+    walk = NULL;
 }
+
+// remove all the paths
+void Graph::removePaths(Node* node) {
+    while (node->paths != NULL) {
+        removeEdge(node->value->bcode().code(), node->paths->to->value->bcode().code());
+    }
+}
+
 
 bool Graph::findPath(Collection* discovered, Node* start, const string& dest) const {
     // label node as discovered
@@ -443,7 +471,6 @@ bool Graph::findPath(Collection* discovered, Node* start, const string& dest) co
                 return true;
             }
         }
-
         walk = walk->next;
     }
     walk = NULL;
@@ -475,6 +502,7 @@ ostream& operator<< (ostream& os, const Graph& a) {
 }
 
 Graph& Graph::operator= (const Graph& a) {
+    //deleteGraph();
     Graph* n = new Graph(a);
     return *n;
 }
