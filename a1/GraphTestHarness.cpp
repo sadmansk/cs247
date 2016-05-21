@@ -111,6 +111,7 @@ public:
     void insert(const BCode&, const string&);
     void insert(Building*);
     void remove(const BCode&);
+    void clear();
     Building* findBuilding(const BCode&) const;
 private:
     struct Node {
@@ -136,7 +137,6 @@ Collection::~Collection() {
         buildings_ = temp;
         temp = NULL;
     }
-    delete temp;
 }
 
 void Collection::insert(const BCode& bcode, const string& name) {
@@ -150,7 +150,6 @@ void Collection::insert(Building* building) {
     buildings_ = temp;
     temp = NULL;
 }
-
 
 void Collection::remove(const BCode& bcode) {
     // indirect points to the address of the node we want to remove
@@ -183,6 +182,50 @@ Building* Collection::findBuilding(const BCode& bcode) const {
 }
 
 
+class CodeList {
+public:
+    CodeList();
+    ~CodeList();
+    void insert(const string&);
+    bool findCode(const string&) const;
+private:
+    struct Node {
+        string value;
+        Node* next;
+    };
+    Node* code_list_;
+};
+
+CodeList::CodeList() {
+    code_list_ = NULL;
+}
+
+CodeList::~CodeList() {
+    while (code_list_ != NULL) {
+        Node* walk = code_list_->next;
+        delete code_list_;
+        code_list_ = walk;
+    }
+}
+
+void CodeList::insert(const string& code) {
+    Node* temp = new Node();
+    temp->value = code;
+    temp->next = code_list_;
+    code_list_ = temp;
+}
+        
+bool CodeList::findCode(const string& code) const {
+    Node* temp = code_list_;
+
+    while (temp) {
+        if (temp->value.compare(code) == 0) {
+            return true;
+        }
+        temp = temp->next;
+    }
+    return false;
+}
 
 //===================================================================
 // Graph (of Buildings and Connectors)
@@ -217,13 +260,14 @@ private:
         Edge* next;
     };
     
+    
     Node* nodes_;
     Node* findNode(const string&) const;
     void addEdge(Node*, Node*, const string&);
     void removeEdge(Node*, const string&);
     void removeNode(Node*);
     void removePaths(Node*);
-    bool findPath(Collection*, Node*, const string&) const;
+    bool findPath(CodeList*, Node*, const string&) const;
 };
 
 //************************************************************************
@@ -351,8 +395,8 @@ void Graph::removeEdge(string code1, string code2) {
 void Graph::printPaths(string code1, string code2, const bool one_line) const {
     Node* dest = findNode(code2);
     
-    Collection* discovered_nodes = new Collection();
-    discovered_nodes->insert(dest->value);
+    CodeList* discovered_nodes = new CodeList();
+    discovered_nodes->insert(code2);
 
     //walk over the different edges 
     Edge* walk = dest->paths;
@@ -367,6 +411,8 @@ void Graph::printPaths(string code1, string code2, const bool one_line) const {
         }
         walk = walk->next;
     }
+
+    delete discovered_nodes;
 }
 
 void Graph::deleteGraph() {
@@ -417,6 +463,8 @@ void Graph::removeEdge(Node* src, const string& bcode) {
     else {
         src->paths = walk->next;
     }
+    delete walk;
+    walk = NULL;
 }
 
 void Graph::removeNode(Node* node) {
@@ -448,9 +496,9 @@ void Graph::removePaths(Node* node) {
 }
 
 
-bool Graph::findPath(Collection* discovered, Node* start, const string& dest) const {
+bool Graph::findPath(CodeList* discovered, Node* start, const string& dest) const {
     // label node as discovered
-    discovered->insert(start->value);
+    discovered->insert(start->value->bcode().code());
     
     // traverse all the paths
     Edge* walk = start->paths;
@@ -464,7 +512,7 @@ bool Graph::findPath(Collection* discovered, Node* start, const string& dest) co
         }
 
         // if the building is not discovered yet
-        if (discovered->findBuilding(code) == NULL) {
+        if (!discovered->findCode(code.code())) {
             if(findPath(discovered, walk->to, dest)) {
                 cout << walk->to->value->bcode() << " (" << walk->type << ") ";
                 walk = NULL;
