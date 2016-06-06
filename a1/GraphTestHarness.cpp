@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 //************************************************************************
@@ -70,10 +71,7 @@ bool operator<= (const BCode& a, const BCode& b) {
 
 // operator overloads
 ostream& operator<< (ostream& os, const BCode& a) {
-    os << a.code();
-    return os;
-}
-
+    os << a.code(); return os; } 
 // Building
 class Building {
 public:
@@ -111,7 +109,9 @@ public:
     Collection();
     ~Collection();
     void insert(const BCode&, const string&);
+    void insert(Building*);
     void remove(const BCode&);
+    void clear();
     Building* findBuilding(const BCode&) const;
 private:
     struct Node {
@@ -137,12 +137,15 @@ Collection::~Collection() {
         buildings_ = temp;
         temp = NULL;
     }
-    delete temp;
 }
 
 void Collection::insert(const BCode& bcode, const string& name) {
+    insert(new Building(bcode, name));
+}
+
+void Collection::insert(Building* building) {
     Node* temp = new Node();
-    temp->value = new Building(bcode, name);
+    temp->value = building;
     temp->next = buildings_;
     buildings_ = temp;
     temp = NULL;
@@ -152,11 +155,14 @@ void Collection::remove(const BCode& bcode) {
     // indirect points to the address of the node we want to remove
     Node** indirect = &buildings_;
     
-    while ((*indirect)->value->bcode() != bcode)
+    while ((*indirect)->value->bcode() != bcode || (*indirect) != NULL)
         indirect = &(*indirect)->next;
-
+    
     // replace it with whatever the next pointer is
-    *indirect = (*indirect)->next;
+    if (*indirect != NULL) {
+        delete (*indirect)->value;
+        *indirect = (*indirect)->next;
+    }
 }
 
 Building* Collection::findBuilding(const BCode& bcode) const {
@@ -176,6 +182,50 @@ Building* Collection::findBuilding(const BCode& bcode) const {
 }
 
 
+class CodeList {
+public:
+    CodeList();
+    ~CodeList();
+    void insert(const string&);
+    bool findCode(const string&) const;
+private:
+    struct Node {
+        string value;
+        Node* next;
+    };
+    Node* code_list_;
+};
+
+CodeList::CodeList() {
+    code_list_ = NULL;
+}
+
+CodeList::~CodeList() {
+    while (code_list_ != NULL) {
+        Node* walk = code_list_->next;
+        delete code_list_;
+        code_list_ = walk;
+    }
+}
+
+void CodeList::insert(const string& code) {
+    Node* temp = new Node();
+    temp->value = code;
+    temp->next = code_list_;
+    code_list_ = temp;
+}
+        
+bool CodeList::findCode(const string& code) const {
+    Node* temp = code_list_;
+
+    while (temp) {
+        if (temp->value.compare(code) == 0) {
+            return true;
+        }
+        temp = temp->next;
+    }
+    return false;
+}
 
 //===================================================================
 // Graph (of Buildings and Connectors)
@@ -210,10 +260,14 @@ private:
         Edge* next;
     };
     
+    
     Node* nodes_;
     Node* findNode(const string&) const;
-    void addEdge(Node*, Node*, string);
-    void removeEdge(Node*, string);
+    void addEdge(Node*, Node*, const string&);
+    void removeEdge(Node*, const string&);
+    void removeNode(Node*);
+    void removePaths(Node*);
+    bool findPath(CodeList*, Node*, const string&) const;
 };
 
 //************************************************************************
@@ -224,11 +278,54 @@ Graph::Graph() {
     nodes_ = NULL;
 }
 
-Graph::~Graph() {}
+Graph::~Graph() {
+    deleteGraph();
+    delete nodes_;
+}
     
 
-Graph::Graph(const Graph&) {
-    nodes_ = NULL;
+Graph::Graph(const Graph& g) {
+    // set the nodes list to null if the nodes_ in g are NULL
+    if (g.nodes_ == NULL) {
+        nodes_ = NULL;
+        return;
+    }
+    Node** walk = &nodes_;
+    Node* p_walk = g.nodes_;
+
+    while (p_walk != NULL) {
+        *walk = new Node();
+        // building shouldn't be deep copied
+        (*walk)->value = p_walk->value;
+
+        // declare paths as null for now
+        (*walk)->paths = NULL;
+        (*walk)->next = NULL;
+        walk = &(*walk)->next;
+        p_walk = p_walk->next;
+    }
+    walk = &nodes_;
+    p_walk = g.nodes_;
+    //now go through the list of nodes and add their paths
+    while (*walk != NULL && p_walk != NULL) {
+        Edge* p_edge_walk = p_walk->paths;
+        Edge** edge_walk = &((*walk)->paths);
+        while (p_edge_walk != NULL) {
+            *edge_walk = new Edge();
+            (*edge_walk)->type = p_edge_walk->type;
+            (*edge_walk)->to = findNode((p_edge_walk->to->value->bcode()).code());
+            (*edge_walk)->next = NULL;
+            edge_walk = &(*edge_walk)->next;
+            p_edge_walk = p_edge_walk->next;
+        }
+        edge_walk = NULL;
+        p_edge_walk = NULL;
+        walk = &(*walk)->next;
+        p_walk = p_walk->next;
+    }
+    walk = NULL;
+    p_walk = NULL;
+
 }
 
 void Graph::addNode(Building* building) {
@@ -261,12 +358,8 @@ void Graph::addNode(Building* building) {
 }
 
 void Graph::removeNode(string bcode) {
-    Node** indirect = &nodes_;
-
-    while ((*indirect)->value->bcode() != bcode)
-        indirect = &(*indirect)->next;
-
-    *indirect = (*indirect)->next;
+    Node* node_to_remove = findNode(bcode);
+    removeNode(node_to_remove);
 }
 
 Building* Graph::findBuilding(string bcode) const {
@@ -292,7 +385,6 @@ void Graph::addEdge(string code1, string code2, string connector) {
 void Graph::removeEdge(string code1, string code2) {
     Node* node1 = findNode(code1);
     Node* node2 = findNode(code2);
-
     // first remove edge from 1 to 2
     removeEdge(node1, code2);
 
@@ -301,28 +393,49 @@ void Graph::removeEdge(string code1, string code2) {
 }
 
 void Graph::printPaths(string code1, string code2, const bool one_line) const {
+    Node* dest = findNode(code2);
+    
+    CodeList* discovered_nodes = new CodeList();
+    discovered_nodes->insert(code2);
+
+    //walk over the different edges 
+    Edge* walk = dest->paths;
+    while (walk != NULL) {
+        //edge case if the path is immediate
+        if (code1.compare(walk->to->value->bcode().code()) == 0) {
+            cout << "\t" << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
+        }
+        else if (findPath(discovered_nodes, walk->to, code1)) {
+            //print the first edge
+            cout << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
+        }
+        walk = walk->next;
+    }
+
+    delete discovered_nodes;
 }
 
 void Graph::deleteGraph() {
-
+    while (nodes_ != NULL) {
+        removeNode(nodes_);
+    }
 }    
 
-Graph::Node* Graph::findNode(const string& bcode) const {
+Graph::Node* Graph::findNode(const string& code) const {
     Node* temp = nodes_;
-    
-    while (temp) {
+    BCode bcode(code);
+    while (temp != NULL) {
         if (temp->value->bcode() == bcode) {
             return temp;
         }
         temp = temp->next;
     }
-    temp = NULL;
     delete temp;
     // return null pointer if building can't be found
     return NULL;
 }
     
-void Graph::addEdge(Node* src, Node* dest, string connector) {
+void Graph::addEdge(Node* src, Node* dest, const string& connector) {
     Edge* new_edge = new Edge();
     new_edge->type = connector;
     new_edge->to = dest;
@@ -331,13 +444,85 @@ void Graph::addEdge(Node* src, Node* dest, string connector) {
     new_edge = NULL;
 }
 
-void Graph::removeEdge(Node* src, string bcode) {
-    Edge** indirect = &(src->paths);
+void Graph::removeEdge(Node* src, const string& bcode) {
+    Edge* walk = src->paths;
+    Edge* prev = NULL;
 
-    while ((*indirect)->to->value->bcode() != bcode)
-        indirect = &(*indirect)->next;
+    while (walk != NULL) {
+        if (walk->to->value->bcode().code().compare(bcode) == 0) {
+            break;
+        }
+        prev = walk;
+        walk = walk->next;
+    }
 
-    *indirect = (*indirect)->next;
+    walk->to = NULL; //clear the reference to the building pointer
+    if (prev != NULL) {
+        prev->next = walk->next;
+    }
+    else {
+        src->paths = walk->next;
+    }
+    delete walk;
+    walk = NULL;
+}
+
+void Graph::removeNode(Node* node) {
+    Node* walk = nodes_;
+    Node* prev = NULL;
+
+    while (walk != NULL && walk != node) {
+        prev = walk;
+        walk = walk->next;
+    }
+    removePaths(walk);
+    walk->value = NULL;
+    // remove node members
+    if (prev != NULL) {
+        prev->next = walk->next;
+    }
+    else {
+        nodes_ = walk->next;
+    }
+    delete walk;
+    walk = NULL;
+}
+
+// remove all the paths
+void Graph::removePaths(Node* node) {
+    while (node->paths != NULL) {
+        removeEdge(node->value->bcode().code(), node->paths->to->value->bcode().code());
+    }
+}
+
+
+bool Graph::findPath(CodeList* discovered, Node* start, const string& dest) const {
+    // label node as discovered
+    discovered->insert(start->value->bcode().code());
+    
+    // traverse all the paths
+    Edge* walk = start->paths;
+    while (walk != NULL) {
+        BCode code = walk->to->value->bcode();
+        // if we find the destination
+        if (dest.compare(code.code()) == 0) {
+            cout << "\t" << dest << " (" << walk->type << ") ";
+            walk = NULL;
+            return true;
+        }
+
+        // if the building is not discovered yet
+        if (!discovered->findCode(code.code())) {
+            if(findPath(discovered, walk->to, dest)) {
+                cout << walk->to->value->bcode() << " (" << walk->type << ") ";
+                walk = NULL;
+                return true;
+            }
+        }
+        walk = walk->next;
+    }
+    walk = NULL;
+    return false;
 }
 
 // Graph operators
@@ -365,12 +550,17 @@ ostream& operator<< (ostream& os, const Graph& a) {
 }
 
 Graph& Graph::operator= (const Graph& a) {
-    Graph n(a);
-    return n;
+    //deleteGraph();
+    Graph* n = new Graph(a);
+    return *n;
 }
 
-bool Graph::operator== (const Graph&) const {
-    return true;
+bool Graph::operator== (const Graph& g) const {
+    ostringstream other;
+    other << g;
+    ostringstream this_os;
+    this_os << *this;
+    return other.str().compare(this_os.str()) == 0;
 }
 
 
