@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <map>
-
+#include <ctime>
 
 class Date {
 public:
@@ -19,12 +19,16 @@ public:
 private:
 	struct	Impl;
 	Impl*	pimpl_;
-    static std::map <std::string, int> *months_map;
+    static const std::string month_name[];
 };
 
 // helper functions
 
-static Date::map <std::string, int> months_map = NULL;
+const std::string Date::month_name[] = {
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+};
+//static Date::map <std::string, int> months_map = NULL;
 
 Date incDays (const Date&, long);  // increment Date by num days
 Date incMonths (const Date&, int); // increment Date by num months - round down if invalid, return new Date
@@ -53,11 +57,14 @@ struct Date::Impl {
 
 Date::Date(int day, std::string month, int year) : pimpl_(new Date::Impl) {
     // construct the month map
-    if (months_map == NULL) {
+    /*if (months_map == NULL) {
         months_map = new std::map<std::string, int> ();
-    }
-    if (year < 0) {
+    }*/
+    if (year < 1900 || year > 2100) {
         throw "Invalid year";
+    }
+    if (day < 1 || day > 31) {
+        throw "Invalid date";
     }
 
     pimpl_->day_ = day;
@@ -70,10 +77,10 @@ Date::~Date() {
     pimpl_ = NULL;
 }
 
-Date::Date (const Date& d) : pimpl_(new Date::Impl (*d.impl_)) { }
+Date::Date (const Date& d) : pimpl_(new Date::Impl (*d.pimpl_)) { }
 
 Date& Date::operator= (const Date& d) {
-    Date copy(r);
+    Date copy(d);
     Date::Impl* temp;
 
     temp = copy.pimpl_;
@@ -112,13 +119,9 @@ std::istream& operator>> (std::istream& is, Date& d) {
     int day;
     std::string month;
     int year;
+    char comma;
 
-    std::cout << "Enter day of month (1-31): ";
-    is >> day;
-    std::cout << "Enter month (January-December): ";
-    is >> month;
-    std::cout << "Enter year (1900-2100): ";
-    is >> year;
+    is >> day >> month >> comma >> year;
 
     d = Date(day, month, year);
 
@@ -149,6 +152,30 @@ bool operator> (const Date& a, const Date& b) {
 
 bool operator>= (const Date& a, const Date& b) {
     return !(a < b);
+}
+
+// Other member functions
+
+Date incDays (const Date& d, long val) {
+    return Date(d);
+}
+
+Date incMonths (const Date& d, int val) {
+    return Date(d);
+}
+
+Date incYears (const Date& d, int val) {
+    return Date(d);
+}
+
+Date Date::today() {
+    time_t rawtime;
+    struct tm* timeinfo;
+
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    
+    return Date(timeinfo->tm_mday, month_name[timeinfo->tm_mon], timeinfo->tm_year);
 }
     
 #endif
