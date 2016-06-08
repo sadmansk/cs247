@@ -14,7 +14,7 @@ static int get_days (std::string mon) {
             return month_name[i].second;
         }
     }
-    return 0;
+    return -1;
 }
 
 static int get_total_days (std::string mon) {
@@ -58,7 +58,7 @@ static bool is_leap_year (int year) {
 
 } // namespace month_man
 
-// Date Declaration
+// Date Pimpl Definition
 
 struct Date::Impl {
     int day_;
@@ -68,7 +68,7 @@ struct Date::Impl {
 
 // Constructors, Destructors and Assignment
 
-Date::Date(int day, std::string month, int year) : pimpl_(new Date::Impl) {
+Date::Date(int day, std::string month, int year)  {
     // validate the range on the parameters
     if (year < 1900 || year > 2100) {
         throw "Invalid year";
@@ -82,10 +82,9 @@ Date::Date(int day, std::string month, int year) : pimpl_(new Date::Impl) {
     if (max_day < 30 && is_leap) max_day++;
 
     if (day < 1 || day > max_day) {
-        std::cout << day;
         throw "Invalid day of the month";
     }
-
+    pimpl_ = new Date::Impl;
     pimpl_->day_ = day;
     pimpl_->month_ = month;
     pimpl_->year_ = year;
@@ -209,14 +208,17 @@ Date incDays (const Date& d, long val) {
     // go through the years
     while (val + new_day > 0) {
         days_in_year = 365;
-        if (month_man::is_leap_year(new_year)) {
+        if (month_man::is_leap_year(new_year) && new_day <= (31+29)) {
             days_in_year++;
         }
 
         if (val + new_day < days_in_year) {
             new_day = val + new_day;
+            if (month_man::is_leap_year(new_year)) {
+                days_in_year = 366;
+            }
             new_month = month_man::month_name[month_man::get_index_from_days(new_day, days_in_year)].first;
-            new_day = new_day - month_man::get_total_days(new_month) - (days_in_year - 365);
+            new_day = new_day - month_man::get_total_days(new_month);
             return Date(new_day, new_month, new_year);
         }
         else {
@@ -235,6 +237,9 @@ Date incMonths (const Date& d, int val) {
     std::string new_month = month_man::month_name[val % 12].first;
 
     int new_day = month_man::get_days(new_month);
+    if (month_man::is_leap_year(years) && new_month.compare("February") == 0) {
+        new_day = 29;
+    }
     if (d.day() < new_day) {
         new_day = d.day();
     }
@@ -243,8 +248,14 @@ Date incMonths (const Date& d, int val) {
 }
 
 Date incYears (const Date& d, int val) {
-    int newYear = d.year() + val;
-    return Date(d.day(), d.month(), newYear);
+    int new_year = d.year() + val;
+    int new_day = d.day();
+    if (month_man::is_leap_year(d.year()) && !month_man::is_leap_year(new_year)) {
+        if (d.month().compare("February") == 0 && new_day == 29) {
+            new_day = 28;
+        }
+    }
+    return Date(new_day, d.month(), new_year);
 }
 
 Date Date::today() {
