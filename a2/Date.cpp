@@ -17,7 +17,7 @@ static int get_days (std::string mon) {
     return -1;
 }
 
-static int get_total_days (std::string mon) {
+static int get_total_days (std::string mon, bool leap = false) {
     int count = 0;
     for (unsigned int i = 0; i < month_name.size(); i++) {
         if (month_name[i].first.compare(mon) == 0) {
@@ -25,6 +25,9 @@ static int get_total_days (std::string mon) {
         }
         else {
             count += month_name[i].second;
+            if (i == 1 && leap) {
+                count++;
+            }
         }
     }
     return -1;
@@ -201,24 +204,21 @@ bool operator>= (const Date& a, const Date& b) {
 
 Date incDays (const Date& d, long val) {
     int new_year = d.year();
-    int new_day = month_man::get_total_days(d.month()) + d.day();
+    int new_day = month_man::get_total_days(d.month(), month_man::is_leap_year(new_year)) + d.day();
     int days_in_year;
     std::string new_month;
 
     // go through the years
     while (val + new_day > 0) {
         days_in_year = 365;
-        if (month_man::is_leap_year(new_year) && new_day <= (31+29)) {
+        if (month_man::is_leap_year(new_year)) {
             days_in_year++;
         }
 
         if (val + new_day < days_in_year) {
             new_day = val + new_day;
-            if (month_man::is_leap_year(new_year)) {
-                days_in_year = 366;
-            }
             new_month = month_man::month_name[month_man::get_index_from_days(new_day, days_in_year)].first;
-            new_day = new_day - month_man::get_total_days(new_month);
+            new_day = new_day - month_man::get_total_days(new_month, days_in_year == 366);
             return Date(new_day, new_month, new_year);
         }
         else {
