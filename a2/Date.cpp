@@ -45,7 +45,12 @@ static int get_index (std::string mon) {
 static int get_index_from_days (int days, int days_in_year) {
     days = ((days - 1) % days_in_year) + 1;
     for (unsigned int i = 0; i < month_name.size(); i++) {
-        if (days > month_name[i].second) {
+        if (i == 1 && days_in_year == 366) {
+            if (days > 29)
+                days -= 29;
+            else return 1;
+        }
+        else if (days > month_name[i].second) {
             days -= month_name[i].second;
         }
         else {
@@ -218,7 +223,7 @@ Date incDays (const Date& d, long val) {
         if (val + new_day < days_in_year) {
             new_day = val + new_day;
             new_month = month_man::month_name[month_man::get_index_from_days(new_day, days_in_year)].first;
-            new_day = new_day - month_man::get_total_days(new_month, days_in_year == 366);
+            new_day = new_day - month_man::get_total_days(new_month, month_man::is_leap_year(new_year));
             return Date(new_day, new_month, new_year);
         }
         else {
