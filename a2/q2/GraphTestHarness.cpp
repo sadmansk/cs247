@@ -249,7 +249,7 @@ int main( int argc, char *argv[] ) {
                     char mapNo = '0';
                     if (map == &map1) mapNo = '1';
                     else if (map == &map2) mapNo = '2';
-                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << " to be removed." << endl;
+                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << "." << endl;
                     cout << no_change_map << mapNo << '.' << endl;
                 }
                 catch (Graph::NoEdgeFoundException &e) {
@@ -342,7 +342,7 @@ int main( int argc, char *argv[] ) {
                 try {
                     string code1, code2, all;
                     cin >> code1 >> code2 >> all;
-                    cout << "Paths from " << code1 << " to " << code2 << " are: " << endl;
+                    cout << "Paths from " << code1 << " to " << code2 << " are:" << endl;
                     bool printall = ( all.length() > 0 && all.at(0) == 't' ) ? true : false;
                     string junk;
                     getline( cin, junk );
