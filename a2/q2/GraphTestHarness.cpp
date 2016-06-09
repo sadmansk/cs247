@@ -146,6 +146,11 @@ int main( int argc, char *argv[] ) {
                         cout << "Please enter a new building code: ";
                         cin >> code;
                     }
+                    catch (BaseException &e) {
+                        cout << e.message() << endl;
+                        cout << "Please enter a new building code: ";
+                        cin >> code;
+                    }
                 }
                 break;
             }
@@ -155,9 +160,9 @@ int main( int argc, char *argv[] ) {
                 string code;
                 try {
                     cin >> code;
-                    map->addNode( buildings.findBuilding( code ) );
                     string junk;
                     getline( cin, junk );
+                    map->addNode( buildings.findBuilding( code ) );
                 }
                 catch (BaseException &e) {
                     cout << e.message() << endl;
@@ -200,9 +205,9 @@ int main( int argc, char *argv[] ) {
                 try {
                     string code1, code2, type;
                     cin >> code1 >> code2 >> type;
-                    map->addEdge( code1, code2, type );
                     string junk;
                     getline ( cin, junk );
+                    map->addEdge( code1, code2, type );
                 }
                 catch (Graph::NodeNotFoundException &e) {
                     // get the current map
@@ -235,9 +240,9 @@ int main( int argc, char *argv[] ) {
                 try {
                     string code1, code2;
                     cin >> code1 >> code2;
-                    map->removeEdge( code1, code2 );
                     string junk;
                     getline ( cin, junk );
+                    map->removeEdge( code1, code2 );
                 }
                 catch (Graph::NodeNotFoundException &e) {
                     // get the current map
@@ -263,9 +268,9 @@ int main( int argc, char *argv[] ) {
                 try {
                     string code;
                     cin >> code;
-                    map->removeNode( code );
                     string junk;
                     getline( cin, junk );
+                    map->removeNode( code );
                 }
                 catch (Graph::NodeNotFoundException &e) {
                     // get the current map
@@ -283,11 +288,11 @@ int main( int argc, char *argv[] ) {
                 string code;
                 try {
                     cin >> code;
+                    string junk;
+                    getline ( cin, junk );
                     map1.removeNode( code );
                     map2.removeNode( code );
                     buildings.remove ( code );
-                    string junk;
-                    getline ( cin, junk );
                 }
                 catch (Graph::NodeNotFoundException &e) {
                     try {
@@ -339,16 +344,16 @@ int main( int argc, char *argv[] ) {
                     cin >> code1 >> code2 >> all;
                     cout << "Paths from " << code1 << " to " << code2 << " are: " << endl;
                     bool printall = ( all.length() > 0 && all.at(0) == 't' ) ? true : false;
-                    map->printPaths( code1, code2, printall );
                     string junk;
                     getline( cin, junk );
+                    map->printPaths( code1, code2, printall );
                 }
                 catch (Graph::NodeNotFoundException &e) {
                     // get the current map
                     char mapNo = '0';
                     if (map == &map1) mapNo = '1';
                     else if (map == &map2) mapNo = '2';
-                    cout << no_change_map << mapNo << '.' << endl;
+                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << " to be removed." << endl;
                 }
                 break;
             }
