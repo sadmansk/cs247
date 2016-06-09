@@ -63,8 +63,16 @@ int main( int argc, char *argv[] ) {
                     string name2;
                     source >> code >> name;
                     getline( source, name2 );
-                    buildings.insert( code, name+name2 );
-                    map1.addNode( buildings.findBuilding ( code ) );
+                    try {
+                        buildings.insert( code, name+name2 );
+                        map1.addNode( buildings.findBuilding ( code ) );
+                    }
+                    catch ( BCode::InvalidFormatException &e ) {
+                        cerr << e.message();
+
+                        cerr << "This command results in no changes to the collection of buildings or to maps." << endl;
+                    }
+
                     break;
                 }
 
@@ -97,6 +105,7 @@ int main( int argc, char *argv[] ) {
     cin >> command;
 
     Op op = convertOp( command );
+    bool success = false;
 
     while ( !cin.eof() ) {
         switch (op) {
@@ -120,9 +129,19 @@ int main( int argc, char *argv[] ) {
                 string code;
                 string name;
                 string name2;
-                cin >> code >> name;
-                getline( cin, name2 );
-                buildings.insert( code, name+name2 );
+                success = false;
+                while (!success && !cin.eof()) {
+                    try {
+                        cin >> code >> name;
+                        getline( cin, name2 );
+                        buildings.insert( code, name+name2 );
+                        success = true;
+                    }
+                    catch (BCode::InvalidFormatException &e) {
+                        cerr << e.message();
+                        cout << "Please enter a new building code:" << endl;
+                    }
+                }
                 break;
             }
 
@@ -193,12 +212,22 @@ int main( int argc, char *argv[] ) {
                 // remove an existing building from the collection of buildings.  The building also needs to be removed from the two maps, as well as all links involving the building
             case wreckage: {
                 string code;
-                cin >> code;
-                map1.removeNode( code );
-                map2.removeNode( code );
-                buildings.remove ( code );
-                string junk;
-                getline ( cin, junk );
+                success = false;
+                while (!success && !cin.eof()) {
+                    try {
+                        cin >> code;
+                        map1.removeNode( code );
+                        map2.removeNode( code );
+                        buildings.remove ( code );
+                        string junk;
+                        getline ( cin, junk );
+                        success = true;
+                    }
+                    catch (Collection::BuildingDoesNotExist &e) {
+                        cerr << e.message() << endl;
+                        cerr << "This command results in no changes to the collectio of buildings or to maps." << endl;
+                    }
+                }
                 break;
             }
 

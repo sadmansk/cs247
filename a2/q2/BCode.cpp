@@ -1,5 +1,10 @@
 #include "BCode.h"
 
+BCode::InvalidFormatException::InvalidFormatException(const std::string& code) {
+    message_ = "\nERROR: Building Code \"" + code + "\" has an invalid format.\n\t- must have length of 2-3 characters\n\t- must start with a capital letter\n\t- must consist of only capiral letters and digits";
+}
+
+
 BCode::BCode(const std::string& bcode) {
     // do a range check on the string
     if (bcode.length() < min_length_ || bcode.length() > max_length_)
@@ -10,7 +15,7 @@ BCode::BCode(const std::string& bcode) {
 
     //check if the all the preceding letters are of valid format
     for (int i = 1; i < bcode.length(); ++i) {
-        if ((bcode[0] < 'A' || bcode[0] > 'Z') && (bcode[0] < '0' || bcode[0] > '9'))
+        if ((bcode[i] < 'A' || bcode[i] > 'Z') && (bcode[i] < '0' || bcode[i] > '9'))
             throw InvalidFormatException(bcode);
     }
 

@@ -1,5 +1,9 @@
 #include "Collection.h"
 
+Collection::BuildingDoesNotExist::BuildingDoesNotExist(const BCode& bcode) {
+    message_ = "\nError: There is not biulding with the code \"" + bcode.code() + "\".\n";
+}
+
 // constructor for safety
 Collection::Collection() {
     buildings_ = NULL;      
@@ -38,6 +42,9 @@ void Collection::remove(const BCode& bcode) {
     if (*indirect != NULL) {
         delete (*indirect)->value;
         *indirect = (*indirect)->next;
+    }
+    else {
+        throw BuildingDoesNotExist(bcode);
     }
 }
 

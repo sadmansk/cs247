@@ -3,6 +3,14 @@
 //Collection
 class Collection {
 public:
+    class BuildingDoesNotExist {
+    public:
+        BuildingDoesNotExist (const BCode& bcode);
+        std::string message() const { return message_; }
+    private:
+        std::string message_;
+    };
+
     Collection();                                   // constructor
     ~Collection();                                  // destructor
     void insert(const BCode&, const std::string&);  // insert a building to the collection

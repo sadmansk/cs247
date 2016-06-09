@@ -9,10 +9,10 @@ public:
     // Exception handler for BCode
     class InvalidFormatException {
     public:
-        InvalidFormatException(std::string code) : code_(code) {}
-        std::string code() const { return code_; }
+        InvalidFormatException (const std::string& code);
+        std::string message() const { return message_; }
     private:
-        std::string code_;
+        std::string message_;
     };
 
     BCode(const std::string&);                                       // constructor
