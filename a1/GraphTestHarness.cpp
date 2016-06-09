@@ -8,10 +8,11 @@ using namespace std;
 //************************************************************************
 //* YOUR IMPLENTATION OF BCODE, BUILDING, COLLECTION HERE
 //************************************************************************
+// Building Code
 class BCode {
 public:
     BCode(const string&);                                       // constructor
-    string code() const;
+    string code() const;                                        // accessor for code()
 
 private:
     string code_;
@@ -69,19 +70,20 @@ bool operator<= (const BCode& a, const BCode& b) {
     return (a < b) || (a == b);
 }
 
-// operator overloads
+//ostream operator for BCode
 ostream& operator<< (ostream& os, const BCode& a) {
     os << a.code(); return os; } 
+
 // Building
 class Building {
 public:
     Building(const BCode&, const string&);
-    string name() const;
-    BCode bcode() const;
+    string name() const;                            // accessor for name
+    BCode bcode() const;                            // accessor for bcode
 
 private:
-    BCode bcode_;
-    string name_;
+    BCode bcode_;                                   // stores the building code
+    string name_;                                   // stores the official name of the building
 };
 
 // constructor
@@ -106,24 +108,23 @@ ostream& operator<< (ostream& os, const Building& a) {
 //Collection
 class Collection {
 public:
-    Collection();
-    ~Collection();
-    void insert(const BCode&, const string&);
-    void insert(Building*);
-    void remove(const BCode&);
-    void clear();
-    Building* findBuilding(const BCode&) const;
+    Collection();                                   // constructor
+    ~Collection();                                  // destructor
+    void insert(const BCode&, const string&);       // insert a building to the collection
+    void remove(const BCode&);                      // removes a building from the collection
+    Building* findBuilding(const BCode&) const;     // finds the building in the collection
 private:
-    struct Node {
+    // Node represents a singly linked list node
+    struct Node {           
         Building* value;
         Node* next;
     };
-    Node* buildings_;
+    Node* buildings_;                               // stores the linked list node
 };
 
-// constructor
+// constructor for safety
 Collection::Collection() {
-    buildings_ = NULL;
+    buildings_ = NULL;      
 }
 
 // destructor
@@ -140,11 +141,8 @@ Collection::~Collection() {
 }
 
 void Collection::insert(const BCode& bcode, const string& name) {
-    insert(new Building(bcode, name));
-}
-
-void Collection::insert(Building* building) {
     Node* temp = new Node();
+    Building* building = new Building(bcode, name);
     temp->value = building;
     temp->next = buildings_;
     buildings_ = temp;
@@ -181,7 +179,7 @@ Building* Collection::findBuilding(const BCode& bcode) const {
     return NULL;
 }
 
-
+// Similar to collection, but stores linked list of only strings
 class CodeList {
 public:
     CodeList();
@@ -247,27 +245,27 @@ public:
     Graph& operator= ( const Graph& );                      // assignment operator for graph objects
     bool operator== ( const Graph& ) const;                 // equality operator for graph objects
 private:
-    struct Edge;    //forward declare edge
+    struct Edge;        //forward declare edge
     struct Node {
-        Building* value;  // source building
+        Building* value;// source building
         Edge* paths;    // list of paths going out the building
         Node* next;
     };
 
     struct Edge {
         string type;    // the type of edge (e.g. bridge, tunnel, etc.)
-        Node* to;     // destination building
+        Node* to;       // destination building
         Edge* next;
     };
     
-    
-    Node* nodes_;
+    Node* nodes_;                                           // holds the root of nodes list
+    // helper functions, function signatures and names are self documenting
     Node* findNode(const string&) const;
     void addEdge(Node*, Node*, const string&);
     void removeEdge(Node*, const string&);
     void removeNode(Node*);
-    void removePaths(Node*);
-    bool findPath(CodeList*, Node*, const string&) const;
+    void removePaths(Node*);                                // remove all the paths attached to a node
+    bool findPath(CodeList*, Node*, const string&) const;   // recursive function for depth-first search
 };
 
 //************************************************************************
@@ -318,13 +316,9 @@ Graph::Graph(const Graph& g) {
             edge_walk = &(*edge_walk)->next;
             p_edge_walk = p_edge_walk->next;
         }
-        edge_walk = NULL;
-        p_edge_walk = NULL;
         walk = &(*walk)->next;
         p_walk = p_walk->next;
     }
-    walk = NULL;
-    p_walk = NULL;
 
 }
 
@@ -344,7 +338,7 @@ void Graph::addNode(Building* building) {
         prev = temp;
         temp = temp->next;
     }
-    // if its the first element
+    // if its the first element set root to the new node
     if (prev == NULL) {
         new_node->next = temp;
         nodes_ = new_node;
@@ -353,8 +347,6 @@ void Graph::addNode(Building* building) {
         prev->next = new_node;
         new_node->next = temp;
     }
-    prev = NULL;
-    temp = NULL;
 }
 
 void Graph::removeNode(string bcode) {
@@ -383,6 +375,7 @@ void Graph::addEdge(string code1, string code2, string connector) {
 }
 
 void Graph::removeEdge(string code1, string code2) {
+    // store the two nodes corresponding to the bcodes
     Node* node1 = findNode(code1);
     Node* node2 = findNode(code2);
     // first remove edge from 1 to 2
@@ -395,6 +388,7 @@ void Graph::removeEdge(string code1, string code2) {
 void Graph::printPaths(string code1, string code2, const bool one_line) const {
     Node* dest = findNode(code2);
     
+    // hold the traversed nodes
     CodeList* discovered_nodes = new CodeList();
     discovered_nodes->insert(code2);
 
@@ -404,10 +398,12 @@ void Graph::printPaths(string code1, string code2, const bool one_line) const {
         //edge case if the path is immediate
         if (code1.compare(walk->to->value->bcode().code()) == 0) {
             cout << "\t" << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
+            if (!one_line) break;
         }
         else if (findPath(discovered_nodes, walk->to, code1)) {
             //print the first edge
             cout << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
+            if (!one_line) break;
         }
         walk = walk->next;
     }
@@ -430,7 +426,6 @@ Graph::Node* Graph::findNode(const string& code) const {
         }
         temp = temp->next;
     }
-    delete temp;
     // return null pointer if building can't be found
     return NULL;
 }
@@ -441,7 +436,6 @@ void Graph::addEdge(Node* src, Node* dest, const string& connector) {
     new_edge->to = dest;
     new_edge->next = src->paths;
     src->paths = new_edge;
-    new_edge = NULL;
 }
 
 void Graph::removeEdge(Node* src, const string& bcode) {
@@ -464,7 +458,6 @@ void Graph::removeEdge(Node* src, const string& bcode) {
         src->paths = walk->next;
     }
     delete walk;
-    walk = NULL;
 }
 
 void Graph::removeNode(Node* node) {
@@ -485,16 +478,14 @@ void Graph::removeNode(Node* node) {
         nodes_ = walk->next;
     }
     delete walk;
-    walk = NULL;
 }
 
-// remove all the paths
+// remove all the paths attached to a node
 void Graph::removePaths(Node* node) {
     while (node->paths != NULL) {
         removeEdge(node->value->bcode().code(), node->paths->to->value->bcode().code());
     }
 }
-
 
 bool Graph::findPath(CodeList* discovered, Node* start, const string& dest) const {
     // label node as discovered
@@ -507,7 +498,6 @@ bool Graph::findPath(CodeList* discovered, Node* start, const string& dest) cons
         // if we find the destination
         if (dest.compare(code.code()) == 0) {
             cout << "\t" << dest << " (" << walk->type << ") ";
-            walk = NULL;
             return true;
         }
 
@@ -515,13 +505,11 @@ bool Graph::findPath(CodeList* discovered, Node* start, const string& dest) cons
         if (!discovered->findCode(code.code())) {
             if(findPath(discovered, walk->to, dest)) {
                 cout << walk->to->value->bcode() << " (" << walk->type << ") ";
-                walk = NULL;
                 return true;
             }
         }
         walk = walk->next;
     }
-    walk = NULL;
     return false;
 }
 
@@ -550,16 +538,26 @@ ostream& operator<< (ostream& os, const Graph& a) {
 }
 
 Graph& Graph::operator= (const Graph& a) {
-    //deleteGraph();
-    Graph* n = new Graph(a);
-    return *n;
+    deleteGraph(); // make sure our current graph is empty before copying
+
+    // Apply copy swap idiom
+    Graph copy{a};
+    Node* temp;
+
+    temp = copy.nodes_;
+    copy.nodes_ = nodes_;
+    nodes_ = temp;
+
+    return *this;
 }
 
 bool Graph::operator== (const Graph& g) const {
+    // hold the ostream data for each of the graphs
     ostringstream other;
     other << g;
     ostringstream this_os;
     this_os << *this;
+    // compare the ostream strings
     return other.str().compare(this_os.str()) == 0;
 }
 
