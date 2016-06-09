@@ -2,6 +2,7 @@
 #define GRAPH_H_
 
 #include "Building.h"
+#include "BaseException.h"
 
 // Similar to collection, but stores linked list of only strings
 class CodeList {
@@ -24,6 +25,37 @@ private:
 
 class Graph {
 public:
+    // Exception classes for errors handled through Graph
+    class NodeAlreadyExistsException { 
+    public:
+        NodeAlreadyExistsException () {}                    // Exception for existing node addition
+    };
+    class NodeNotFoundException {
+    public:
+        NodeNotFoundException (const std::string& code) : code_(code) {}
+        std::string code() const { return code_; }
+    private:
+        std::string code_;
+    };
+    class NodeSelfConnectionException {
+    public:
+        NodeSelfConnectionException (const std::string& code)
+            : code_(code) {}
+        std::string code() const { return code_; }
+    private:
+        std::string code_;
+    };
+    class NoEdgeFoundException {
+    public:
+        NoEdgeFoundException (const std::string& node1, const std::string node2)
+            : node1_(node1), node2_(node2) {}
+        std::string node1() const { return node1_; }
+        std::string node2() const { return node2_; }
+    private:
+        std::string node1_;
+        std::string node2_;
+    };
+
     Graph();                                                // constructor
     ~Graph();                                               // destructor
     Graph ( const Graph& );                                 // copy constructor

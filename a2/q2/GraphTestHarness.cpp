@@ -68,9 +68,9 @@ int main( int argc, char *argv[] ) {
                         map1.addNode( buildings.findBuilding ( code ) );
                     }
                     catch ( BaseException &e ) {
-                        cerr << e.message() << endl;
+                        cout << e.message() << endl;
 
-                        cerr << "This command results in no changes to the collection of buildings or to maps." << endl;
+                        cout << "This command results in no changes to the collection of buildings or to maps." << endl;
                     }
 
                     break;
@@ -109,7 +109,7 @@ int main( int argc, char *argv[] ) {
 
     // Error strings
     const string no_change_map = "This command results in no changes to map";
-    const string no_change = "This command results in no changes to the collection of buildings or to maps";
+    const string no_change = "This command results in no changes to the collection of buildings or to maps.";
 
     while ( !cin.eof() ) {
         switch (op) {
@@ -134,16 +134,17 @@ int main( int argc, char *argv[] ) {
                 string name;
                 string name2;
                 success = false;
+                cin >> code >> name;
+                getline( cin, name2 );
                 while (!success && !cin.eof()) {
                     try {
-                        cin >> code >> name;
-                        getline( cin, name2 );
                         buildings.insert( code, name+name2 );
                         success = true;
                     }
                     catch (BCode::InvalidFormatException &e) {
                         cout << e.message() << e.reason() << endl;
                         cout << "Please enter a new building code: ";
+                        cin >> code;
                     }
                 }
                 break;
@@ -151,16 +152,28 @@ int main( int argc, char *argv[] ) {
 
                 // add an existing building to the current map
             case node: {
+                string code;
                 try {
-                    string code;
                     cin >> code;
                     map->addNode( buildings.findBuilding( code ) );
                     string junk;
                     getline( cin, junk );
                 }
                 catch (BaseException &e) {
-                    cerr << e.message() << endl;
-                    cout << no_change_map << endl;
+                    cout << e.message() << endl;
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
+                catch (Graph::NodeAlreadyExistsException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << "\nERROR: There is already a node for building \"" << code << "\" in map" << mapNo << '.' << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
                 }
                 break;
            }
@@ -184,11 +197,29 @@ int main( int argc, char *argv[] ) {
 
                 // add a new link between existing graph nodes in the current map
             case edge: {
-                string code1, code2, type;
-                cin >> code1 >> code2 >> type;
-                map->addEdge( code1, code2, type );
-                string junk;
-                getline ( cin, junk );
+                try {
+                    string code1, code2, type;
+                    cin >> code1 >> code2 >> type;
+                    map->addEdge( code1, code2, type );
+                    string junk;
+                    getline ( cin, junk );
+                }
+                catch (Graph::NodeNotFoundException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << " to use in the new edge." << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
+                catch (Graph::NodeSelfConnectionException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << "\nERROR: Cannot connect node \"" << e.code() << "\" to itself." << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
                 break;
             }
 
@@ -201,21 +232,49 @@ int main( int argc, char *argv[] ) {
 
                 // remove an existing edge from the current map
             case remEdge: {
-                string code1, code2;
-                cin >> code1 >> code2;
-                map->removeEdge( code1, code2 );
-                string junk;
-                getline ( cin, junk );
+                try {
+                    string code1, code2;
+                    cin >> code1 >> code2;
+                    map->removeEdge( code1, code2 );
+                    string junk;
+                    getline ( cin, junk );
+                }
+                catch (Graph::NodeNotFoundException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << " to be removed." << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
+                catch (Graph::NoEdgeFoundException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << "\nERROR: There is no edge in map" << mapNo << " between buildings \"" << e.node1() << "\" and \"" << e.node1() << "\" to be removed." << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
                 break;
             }
 
                 // remove an existing node from the current map.  There is no change to the collection of Buildings.
             case remNode: {
-                string code;
-                cin >> code;
-                map->removeNode( code );
-                string junk;
-                getline( cin, junk );
+                try {
+                    string code;
+                    cin >> code;
+                    map->removeNode( code );
+                    string junk;
+                    getline( cin, junk );
+                }
+                catch (Graph::NodeNotFoundException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << " to be removed." << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
                 break;
             }
 
@@ -230,9 +289,18 @@ int main( int argc, char *argv[] ) {
                     string junk;
                     getline ( cin, junk );
                 }
+                catch (Graph::NodeNotFoundException &e) {
+                    try {
+                        buildings.remove (code);
+                    }
+                    catch (BaseException &f) {
+                        cout << f.message() << endl;
+                        cout << no_change << endl;
+                    }
+                }
                 catch (BaseException &e) {
-                    cerr << e.message() << endl;
-                    cerr << "This command results in no changes to the collectio of buildings or to maps." << endl;
+                    cout << e.message() << endl;
+                    cout << no_change << endl;
                 }
                 break;
             }
@@ -266,13 +334,22 @@ int main( int argc, char *argv[] ) {
 
                 // find path(s) in graph from one building to another building
             case path: {
-                string code1, code2, all;
-                cin >> code1 >> code2 >> all;
-                cout << "Paths from " << code1 << " to " << code2 << " are: " << endl;
-                bool printall = ( all.length() > 0 && all.at(0) == 't' ) ? true : false;
-                map->printPaths( code1, code2, printall );
-                string junk;
-                getline( cin, junk );
+                try {
+                    string code1, code2, all;
+                    cin >> code1 >> code2 >> all;
+                    cout << "Paths from " << code1 << " to " << code2 << " are: " << endl;
+                    bool printall = ( all.length() > 0 && all.at(0) == 't' ) ? true : false;
+                    map->printPaths( code1, code2, printall );
+                    string junk;
+                    getline( cin, junk );
+                }
+                catch (Graph::NodeNotFoundException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
                 break;
             }
 
@@ -280,7 +357,7 @@ int main( int argc, char *argv[] ) {
                 cerr << "Invalid command." << endl;
             }
         }
-
+        cout << endl;
         cout << "Command: ";
         cin >> command;
         op = convertOp( command );

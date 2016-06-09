@@ -33,7 +33,6 @@ bool CodeList::findCode(const std::string& code) const {
     return false;
 }
 
-
 // constructor
 Graph::Graph() {
     nodes_ = NULL;
@@ -86,6 +85,10 @@ Graph::Graph(const Graph& g) {
 }
 
 void Graph::addNode(Building* building) {
+    if (findBuilding(building->bcode().code()) != NULL) {
+        throw NodeAlreadyExistsException();
+    }
+
     //declare a new node
     Node* new_node = new Node();
     new_node->value = building;
@@ -114,6 +117,9 @@ void Graph::addNode(Building* building) {
 
 void Graph::removeNode(std::string bcode) {
     Node* node_to_remove = findNode(bcode);
+    if (node_to_remove == NULL) {
+        throw NodeNotFoundException(bcode);
+    }
     removeNode(node_to_remove);
 }
 
@@ -129,6 +135,15 @@ void Graph::addEdge(std::string code1, std::string code2, std::string connector)
     // store the two nodes corresponding to the bcodes
     Node* node1 = findNode(code1);
     Node* node2 = findNode(code2);
+    if (node1 == NULL) {
+        throw NodeNotFoundException(code1);
+    }
+    if (node2 == NULL) {
+        throw NodeNotFoundException(code2);
+    }
+    if (node1 == node2) {
+        throw NodeSelfConnectionException(code1);
+    }
 
     // first add edge from 1 to 2
     addEdge(node1, node2, connector);
@@ -141,6 +156,13 @@ void Graph::removeEdge(std::string code1, std::string code2) {
     // store the two nodes corresponding to the bcodes
     Node* node1 = findNode(code1);
     Node* node2 = findNode(code2);
+    if (node1 == NULL) {
+        throw NodeNotFoundException(code1);
+    }
+    if (node2 == NULL) {
+        throw NodeNotFoundException(code2);
+    }
+
     // first remove edge from 1 to 2
     removeEdge(node1, code2);
 
@@ -150,6 +172,14 @@ void Graph::removeEdge(std::string code1, std::string code2) {
 
 void Graph::printPaths(std::string code1, std::string code2, const bool one_line) const {
     Node* dest = findNode(code2);
+    
+    // make sure that both the nodes exist
+    if (findNode(code1) == NULL) {
+        throw NodeNotFoundException(code1);
+    }
+    if (dest == NULL) {
+        throw NodeNotFoundException(code2);
+    }
     
     // hold the traversed nodes
     CodeList* discovered_nodes = new CodeList();
@@ -212,7 +242,10 @@ void Graph::removeEdge(Node* src, const std::string& bcode) {
         prev = walk;
         walk = walk->next;
     }
-
+    // throw an exception if the path is not found
+    if (walk == NULL) {
+        throw NoEdgeFoundException(src->value->bcode().code(), bcode);
+    }
     walk->to = NULL; //clear the reference to the building pointer
     if (prev != NULL) {
         prev->next = walk->next;

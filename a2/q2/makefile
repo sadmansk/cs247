@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -g -Wall
 OBJECTS = GraphTestHarness.o Graph.o Building.o BCode.o Collection.o
-EXEC = program.exe
+EXEC = GraphRobust
 
 ${EXEC} : $ ${OBJECTS}
 	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC}

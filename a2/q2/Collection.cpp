@@ -51,8 +51,12 @@ void Collection::remove(const BCode& bcode) {
     // indirect points to the address of the node we want to remove
     Node** indirect = &buildings_;
     
-    while ((*indirect)->value->bcode() != bcode || (*indirect) != NULL)
-        indirect = &(*indirect)->next;
+    while ((*indirect) != NULL) {
+        if ((*indirect)->value->bcode() != bcode)
+            indirect = &(*indirect)->next;
+        else 
+            break;
+    }
     
     // replace it with whatever the next pointer is
     if (*indirect != NULL) {
