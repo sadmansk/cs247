@@ -1,0 +1,181 @@
+
+ERROR: Building Code "DwE" has an invalid format.
+This command results in no changes to the collection of buildings or to maps.
+AL	Arts Lecture Hall       
+	Connects to: ML (tunnel), EV1 (tunnel), TC (tunnel)
+
+B1	Biology 1      
+	Connects to: B2 (hall), ESC (hall)
+
+B2	Biology 2    
+	Connects to: QNC (bridge), B1 (hall)
+
+BMH	B.C. Matthews Hall    
+
+C2	Chemistry 2     
+	Connects to: MC (tunnel), ESC (bridge), DC (bridge)
+
+COM	Commissary   
+
+CPH	Carl A. Pollock Hall    
+	Connects to: E2 (hall)
+
+CSB	Central Services Building   
+
+DC	William G. Davis Computer Research Centre   
+	Connects to: M3 (bridge), MC (bridge), C2 (bridge), E3 (bridge)
+
+E2	Engineering 2  
+	Connects to: CPH (hall), PHY (hall), E3 (hall)
+
+E3	Engineering 3  
+	Connects to: E5 (bridge), E2 (hall), EIT (bridge), DC (bridge)
+
+E5	Engineering 5  
+	Connects to: E3 (bridge)
+
+E6	Engineering 6  
+
+EIT	Centre for Environmental and Information Technology 
+	Connects to: ESC (bridge), PHY (hall), E3 (bridge)
+
+ERC	Energy Research Centre   
+
+ESC	Earth Sciences & Chemistry  
+	Connects to: B1 (hall), EIT (bridge), C2 (bridge)
+
+EV1	Environment 1           
+	Connects to: AL (tunnel), ML (tunnel), EV2 (hall), HH (bridge)
+
+EV2	Environment 2 
+	Connects to: EV3 (hall), PAS (bridge), EV1 (hall)
+
+EV3	Environment 3  
+	Connects to: EV2 (hall)
+
+GH	Graduate House 
+
+GSC	General Services Complex    
+
+HH	Hagey Hall
+	Connects to: EV1 (bridge)
+
+LIB	Dana Porter Arts Library    
+
+M3	Mathematics 3  
+	Connects to: DC (bridge), MC (bridge)
+
+MC	Mathematics & Computer Building 
+	Connects to: QNC (bridge), DC (bridge), M3 (bridge), C2 (tunnel)
+
+ML	Modern Languages    
+	Connects to: AL (tunnel), EV1 (tunnel)
+
+NH	Ira G. Needles Hall   
+
+PAC	Physical Activities Complex 
+	Connects to: SLC (bridge)
+
+PAS	Psychology, Anthropology, Sociology 
+	Connects to: EV2 (bridge)
+
+PHY	Physics     
+	Connects to: RCH (tunnel), EIT (hall), E2 (hall)
+
+QNC	Mike & Ophelia Lazaridis Quantum-Nano Centre    
+	Connects to: B2 (bridge), MC (bridge)
+
+RCH	J.R. Coutts Engineering Lecture Hall    
+	Connects to: PHY (tunnel)
+
+SCH	South Campus Hall   
+	Connects to: TC (tunnel)
+
+SLC	Student Life Centre 
+	Connects to: PAC (bridge)
+
+TC	William M. Tatham Centre for Co-operative Education & Career Services
+	Connects to: AL (tunnel), SCH (tunnel)
+
+UC	University Club     
+
+Test harness for Graph ADT:
+
+Command: 
+ERROR: Building Code "D" has an invalid format.
+	- must have length of 2-3 characters
+Please enter a new building code: 
+ERROR: Building Code "DAVC" has an invalid format.
+	- must have length of 2-3 characters
+Please enter a new building code: 
+ERROR: Building Code "DC" is already in use.
+Please enter a new building code: 
+ERROR: Building Code "n" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "n" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "v" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "w" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "w" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "b" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "M3" is already in use.
+Please enter a new building code: 
+ERROR: Building Code "e" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "b" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+ERROR: Building Code "as" has an invalid format.
+	- must start with a capital letter
+	- must consist of only capital letters and digits
+Please enter a new building code: 
+ERROR: Building Code "asd" has an invalid format.
+	- must start with a capital letter
+	- must consist of only capital letters and digits
+Please enter a new building code: 
+ERROR: Building Code "MC" is already in use.
+Please enter a new building code: 
+ERROR: Building Code "b" has an invalid format.
+	- must have length of 2-3 characters
+	- must start with a capital letter
+Please enter a new building code: 
+Command: Paths from DC to M3 are:
+	DC (bridge) M3
+
+Command: 
+Command: 
+ERROR: There is already an edge between "MC" and "M3" in map1.
+This command results in no changes to map1.
+
+Command: 
+ERROR: There is already an edge between "MC" and "M3" in map1.
+This command results in no changes to map1.
+
+Command: 
+ERROR: There is already an edge between "MC" and "M3" in map1.
+This command results in no changes to map1.
+
+Command: 
+Command: 
+Command: 
+Command: 
+Command: 

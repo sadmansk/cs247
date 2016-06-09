@@ -145,11 +145,15 @@ int main( int argc, char *argv[] ) {
                         cout << e.message() << e.reason() << endl;
                         cout << "Please enter a new building code: ";
                         cin >> code;
+                        string junk;
+                        getline(cin,junk);
                     }
                     catch (BaseException &e) {
                         cout << e.message() << endl;
                         cout << "Please enter a new building code: ";
                         cin >> code;
+                        string junk;
+                        getline(cin,junk);
                     }
                 }
                 break;
@@ -225,6 +229,22 @@ int main( int argc, char *argv[] ) {
                     cout << "\nERROR: Cannot connect node \"" << e.code() << "\" to itself." << endl;
                     cout << no_change_map << mapNo << '.' << endl;
                 }
+                catch (Graph::EdgeAlreadyExistsException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << "\nERROR: There is already an edge between \"" << e.node1() << "\" and \"" << e.node2() << "\" in map" << mapNo << "." << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
+                catch (Graph::ConnectorTypeException &e) {
+                    // get the current map
+                    char mapNo = '0';
+                    if (map == &map1) mapNo = '1';
+                    else if (map == &map2) mapNo = '2';
+                    cout << e.message() << endl;
+                    cout << no_change_map << mapNo << '.' << endl;
+                }
                 break;
             }
 
@@ -257,7 +277,7 @@ int main( int argc, char *argv[] ) {
                     char mapNo = '0';
                     if (map == &map1) mapNo = '1';
                     else if (map == &map2) mapNo = '2';
-                    cout << "\nERROR: There is no edge in map" << mapNo << " between buildings \"" << e.node1() << "\" and \"" << e.node1() << "\" to be removed." << endl;
+                    cout << "\nERROR: There is no edge in map" << mapNo << " between buildings \"" << e.node1() << "\" and \"" << e.node2() << "\" to be removed." << endl;
                     cout << no_change_map << mapNo << '.' << endl;
                 }
                 break;

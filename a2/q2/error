@@ -8,7 +8,7 @@ w MC
 w DC
 b DC Davos Centre
 M3
-e MC DC bridge
+e MC DC briasd
 b 1 Lel Yes
 as
 asd
@@ -18,7 +18,9 @@ DHR
 p DC M3
 p M3 DC
 r M3 DC
-e MC M3 bridge
+e MC M3 hasf
+e MC M3 hall
+e MC M3 hall
 r MC M3
 r MC DC
 w MC

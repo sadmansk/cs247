@@ -33,6 +33,12 @@ bool CodeList::findCode(const std::string& code) const {
     return false;
 }
 
+Graph::ConnectorTypeException::ConnectorTypeException (const std::string& connector)
+   : BaseException(connector) {
+    message_ = "\nERROR: There is no building connector of type \"" + connector + "\"."; 
+}
+
+std::array<std::string, 3> Graph::connectors = {"bridge", "tunnel", "hall"};
 // constructor
 Graph::Graph() {
     nodes_ = NULL;
@@ -143,6 +149,33 @@ void Graph::addEdge(std::string code1, std::string code2, std::string connector)
     }
     if (node1 == node2) {
         throw NodeSelfConnectionException(code1);
+    }
+
+    // check if the edge already exists
+    Edge* walk = node1->paths;
+
+    while (walk != NULL) {
+        if (walk->to->value->bcode().code().compare(code2) == 0) {
+            break;
+        }
+        walk = walk->next;
+    }
+    // throw an exception if the path is not found
+    if (walk != NULL) {
+        throw EdgeAlreadyExistsException(code1, code2);
+    }
+    walk = NULL;
+
+    //check if the connector type is valid
+    bool isValidConnector = false;
+    for (unsigned int i = 0; i < connectors.size(); ++i) {
+        if (connectors[i] == connector) {
+            isValidConnector = true;
+            break;
+        }
+    }
+    if (!isValidConnector) {
+        throw ConnectorTypeException(connector);
     }
 
     // first add edge from 1 to 2

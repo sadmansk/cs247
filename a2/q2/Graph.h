@@ -3,6 +3,7 @@
 
 #include "Building.h"
 #include "BaseException.h"
+#include <array>
 
 // Similar to collection, but stores linked list of only strings
 class CodeList {
@@ -45,9 +46,9 @@ public:
     private:
         std::string code_;
     };
-    class NoEdgeFoundException {
+    class EdgeException {
     public:
-        NoEdgeFoundException (const std::string& node1, const std::string node2)
+        EdgeException (const std::string& node1, const std::string& node2)
             : node1_(node1), node2_(node2) {}
         std::string node1() const { return node1_; }
         std::string node2() const { return node2_; }
@@ -55,6 +56,21 @@ public:
         std::string node1_;
         std::string node2_;
     };
+    class NoEdgeFoundException : public EdgeException {
+    public:
+        NoEdgeFoundException (const std::string& node1, const std::string& node2)
+            : EdgeException(node1, node2) {}
+    };
+    class EdgeAlreadyExistsException : public EdgeException {
+    public:
+        EdgeAlreadyExistsException (const std::string& node1, const std::string& node2)
+            : EdgeException(node1, node2) {}
+    };
+    class ConnectorTypeException : public BaseException {
+    public:
+        ConnectorTypeException (const std::string& connector);
+    };
+
 
     Graph();                                                // constructor
     ~Graph();                                               // destructor
@@ -84,6 +100,7 @@ private:
     };
     
     Node* nodes_;                                               // holds the root of nodes list
+    static std::array<std::string, 3> connectors;
     // helper functions, function signatures and names are self documenting
     Node* findNode(const std::string&) const;
     void addEdge(Node*, Node*, const std::string&);
