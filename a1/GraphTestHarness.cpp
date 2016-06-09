@@ -398,10 +398,12 @@ void Graph::printPaths(string code1, string code2, const bool one_line) const {
         //edge case if the path is immediate
         if (code1.compare(walk->to->value->bcode().code()) == 0) {
             cout << "\t" << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
+            if (!one_line) break;
         }
         else if (findPath(discovered_nodes, walk->to, code1)) {
             //print the first edge
             cout << walk->to->value->bcode()<< " (" << walk->type << ") " << code2 << endl;
+            if (!one_line) break;
         }
         walk = walk->next;
     }
