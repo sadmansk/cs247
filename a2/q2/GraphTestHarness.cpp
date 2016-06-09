@@ -353,7 +353,7 @@ int main( int argc, char *argv[] ) {
                     char mapNo = '0';
                     if (map == &map1) mapNo = '1';
                     else if (map == &map2) mapNo = '2';
-                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << " to be removed." << endl;
+                    cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << "." << endl;
                 }
                 break;
             }

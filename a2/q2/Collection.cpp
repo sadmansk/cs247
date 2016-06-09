@@ -1,15 +1,15 @@
 #include "Collection.h"
 
 Collection::BuildingNotFoundException::BuildingNotFoundException(const std::string& code) : BaseException(code) {
-    message_ = "\nError: There is no building with the code \"" + code + "\".";
+    message_ = "\nERROR: There is no building with the code \"" + code + "\".";
 }
 
 Collection::BuildingAlreadyInUseException::BuildingAlreadyInUseException(const std::string& code) : BaseException(code) {
-    message_ = "\nError: Building Code \"" + code + "\" is already in use.";
+    message_ = "\nERROR: Building Code \"" + code + "\" is already in use.";
 }
 
 Collection::DestroyedBuildingException::DestroyedBuildingException(const std::string& code) : BaseException(code) {
-    message_ = "\nError: Building Code \"" + code + "\" was used for a former building.";
+    message_ = "\nERROR: Building Code \"" + code + "\" was used for a former building.";
 }
 
 std::vector<std::string> Collection::wrecked_buildings(0);
