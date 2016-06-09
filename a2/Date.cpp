@@ -42,10 +42,9 @@ static int get_index (std::string mon) {
     return -1;
 }
 
-static int get_index_from_days (int days, int days_in_year) {
-    days = ((days - 1) % days_in_year) + 1;
+static int get_index_from_days (int days, bool leap = false) {
     for (unsigned int i = 0; i < month_name.size(); i++) {
-        if (i == 1 && days_in_year == 366) {
+        if (i == 1 && leap) {
             if (days > 29)
                 days -= 29;
             else return 1;
@@ -220,9 +219,9 @@ Date incDays (const Date& d, long val) {
             days_in_year++;
         }
 
-        if (val + new_day < days_in_year) {
+        if (val + new_day <= days_in_year) {
             new_day = val + new_day;
-            new_month = month_man::month_name[month_man::get_index_from_days(new_day, days_in_year)].first;
+            new_month = month_man::month_name[month_man::get_index_from_days(new_day, month_man::is_leap_year(new_year))].first;
             new_day = new_day - month_man::get_total_days(new_month, month_man::is_leap_year(new_year));
             return Date(new_day, new_month, new_year);
         }
@@ -238,7 +237,7 @@ Date incDays (const Date& d, long val) {
 Date incMonths (const Date& d, int val) {
     // start month from January
     val = month_man::get_index(d.month()) + val;
-    int years = d.year() + val / 12;
+    int years = d.year() + (val / 12);
     std::string new_month = month_man::month_name[val % 12].first;
 
     int new_day = month_man::get_days(new_month);
