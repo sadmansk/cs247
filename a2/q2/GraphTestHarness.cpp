@@ -39,6 +39,10 @@ int main( int argc, char *argv[] ) {
     Collection buildings;
     Graph map1, map2;
 
+    // Error strings
+    const string no_change_map = "This command results in no changes to map";
+    const string no_change = "This command results in no changes to the collection of buildings or to maps.";
+
     // initialize buildings and map1 with input file, if present
     if ( argc > 1 ) {
 
@@ -78,13 +82,39 @@ int main( int argc, char *argv[] ) {
 
                     // add a new link between two existing nodes in map1
                 case edge: {
-                    string code1, code2, type;
-                    source >> code1 >> code2 >> type;
-                    map1.addEdge( code1, code2, type );
+                    try {
+                        string code1, code2, type;
+                        source >> code1 >> code2 >> type;
+                        map1.addEdge( code1, code2, type );
+                    }
+                    catch (Graph::NodeNotFoundException &e) {
+                        // get the current map
+                        char mapNo = '1';
+                        cout << "\nERROR: There is no building \"" << e.code() << "\" in map" << mapNo << " to use in the new edge." << endl;
+                        cout << no_change_map << mapNo << '.' << endl;
+                    }
+                    catch (Graph::NodeSelfConnectionException &e) {
+                        // get the current map
+                        char mapNo = '1';
+                        cout << "\nERROR: Cannot connect node \"" << e.code() << "\" to itself." << endl;
+                        cout << no_change_map << mapNo << '.' << endl;
+                    }
+                    catch (Graph::EdgeAlreadyExistsException &e) {
+                        // get the current map
+                        char mapNo = '1';
+                        cout << "\nERROR: There is already an edge between \"" << e.node1() << "\" and \"" << e.node2() << "\" in map" << mapNo << "." << endl;
+                        cout << no_change_map << mapNo << '.' << endl;
+                    }
+                    catch (Graph::ConnectorTypeException &e) {
+                        // get the current map
+                        char mapNo = '1';
+                        cout << e.message() << endl;
+                        cout << no_change_map << mapNo << '.' << endl;
+                    }
                     string junk;
                     getline ( source, junk );
                     break;
-                }
+                 }
 
                 default: { }
             }
@@ -106,10 +136,6 @@ int main( int argc, char *argv[] ) {
 
     Op op = convertOp( command );
     bool success = false;
-
-    // Error strings
-    const string no_change_map = "This command results in no changes to map";
-    const string no_change = "This command results in no changes to the collection of buildings or to maps.";
 
     while ( !cin.eof() ) {
         switch (op) {
