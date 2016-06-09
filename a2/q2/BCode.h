@@ -3,16 +3,17 @@
 
 #include <string>
 #include <ostream>
+#include "BaseException.h"
 
 class BCode {
 public:
     // Exception handler for BCode
-    class InvalidFormatException {
+    class InvalidFormatException : public BaseException {
     public:
-        InvalidFormatException (const std::string& code);
-        std::string message() const { return message_; }
+        InvalidFormatException (const std::string& code, const std::string& reason);
+        std::string reason() const;
     private:
-        std::string message_;
+        std::string reason_;
     };
 
     BCode(const std::string&);                                       // constructor
@@ -20,21 +21,16 @@ public:
 
 private:
     std::string code_;
-    static int const min_length_ = 1;
+    static int const min_length_ = 2;
     static int const max_length_ = 3;
 };
 
 // comparison operators
 bool operator== (const BCode& a, const BCode& b);
-
 bool operator< (const BCode& a, const BCode& b); 
-
 bool operator!= (const BCode& a, const BCode& b);
-
 bool operator> (const BCode& a, const BCode& b);
-
 bool operator>= (const BCode& a, const BCode& b);
-
 bool operator<= (const BCode& a, const BCode& b);
 
 // operator overloads

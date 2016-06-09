@@ -1,22 +1,26 @@
 #include "BCode.h"
 
-BCode::InvalidFormatException::InvalidFormatException(const std::string& code) {
-    message_ = "\nERROR: Building Code \"" + code + "\" has an invalid format.\n\t- must have length of 2-3 characters\n\t- must start with a capital letter\n\t- must consist of only capiral letters and digits";
+BCode::InvalidFormatException::InvalidFormatException(const std::string& code, const std::string& reason) : BaseException(code) {
+    message_ = "\nERROR: Building Code \"" + code + "\" has an invalid format.";
+    reason_ = reason;
 }
 
+std::string BCode::InvalidFormatException::reason() const {
+    return reason_;
+}
 
 BCode::BCode(const std::string& bcode) {
     // do a range check on the string
     if (bcode.length() < min_length_ || bcode.length() > max_length_)
-        throw InvalidFormatException(bcode);
+        throw InvalidFormatException(bcode, "\n\t- must have length of 2-3 characters");
     // check if the starting character is a capital letter
     if (bcode[0] < 'A' || bcode[0] > 'Z')
-        throw InvalidFormatException(bcode);
+        throw InvalidFormatException(bcode, "\n\t- must start with a capital letter");
 
     //check if the all the preceding letters are of valid format
-    for (int i = 1; i < bcode.length(); ++i) {
+    for (unsigned int i = 1; i < bcode.length(); ++i) {
         if ((bcode[i] < 'A' || bcode[i] > 'Z') && (bcode[i] < '0' || bcode[i] > '9'))
-            throw InvalidFormatException(bcode);
+            throw InvalidFormatException(bcode, "\n\t- must consist of only capital letters and digits");
     }
 
     code_ = bcode;
@@ -32,7 +36,7 @@ bool operator== (const BCode& a, const BCode& b) {
 }
 
 bool operator< (const BCode& a, const BCode& b) {
-    for (int i = 0; i < a.code().length() && i < b.code().length(); i++) {
+    for (unsigned int i = 0; i < a.code().length() && i < b.code().length(); i++) {
         // compare character by character, assumes all characters are upper case for now
         if (a.code()[i] < b.code()[i]) {
             return true;

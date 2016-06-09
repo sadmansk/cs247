@@ -51,7 +51,6 @@ e MC QNC bridge
 e SCH TC tunnel
 e TC AL tunnel
 e EV1 HH bridge
-e DWE RCH tunnel
 e RCH PHY tunnel
 e PAC SLC bridge
 e EV1 EV2 hall
@@ -60,7 +59,6 @@ e EV2 EV3 hall
 e EV1 ML tunnel
 e EV1 AL tunnel
 e E2 CPH hall
-e CPH DWE bridge
 e ESC EIT bridge
 e ESC B1 hall
 e B1 B2 hall

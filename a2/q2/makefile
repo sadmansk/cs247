@@ -7,10 +7,11 @@ ${EXEC} : $ ${OBJECTS}
 	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC}
 
 GraphTestHarness.o : GraphTestHarness.cpp Collection.o Graph.o
-Graph.o : Graph.cpp Graph.h Building.o
-Collection.o : Collection.cpp Collection.h Building.o
-Building.o : Building.cpp Building.h BCode.o
-BCode.o : BCode.h BCode.cpp
+Graph.o : Graph.cpp Graph.h Building.o BaseException.o
+Collection.o : Collection.cpp Collection.h Building.o BaseException.o
+Building.o : Building.cpp Building.h BCode.o BaseException.o
+BCode.o : BCode.h BCode.cpp BaseException.o
+BaseException.o : BaseException.h
 
 clean:
 	rm -rf ${OBJECTS} ${EXEC}

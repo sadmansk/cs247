@@ -1,9 +1,18 @@
 #include "Collection.h"
 
-Collection::BuildingDoesNotExist::BuildingDoesNotExist(const BCode& bcode) {
-    message_ = "\nError: There is not biulding with the code \"" + bcode.code() + "\".\n";
+Collection::BuildingNotFoundException::BuildingNotFoundException(const std::string& code) : BaseException(code) {
+    message_ = "\nError: There is no building with the code \"" + code + "\".";
 }
 
+Collection::BuildingAlreadyInUseException::BuildingAlreadyInUseException(const std::string& code) : BaseException(code) {
+    message_ = "\nError: Building Code \"" + code + "\" is already in use.";
+}
+
+Collection::DestroyedBuildingException::DestroyedBuildingException(const std::string& code) : BaseException(code) {
+    message_ = "\nError: Building Code \"" + code + "\" was used for a former building.";
+}
+
+std::vector<std::string> Collection::wrecked_buildings(0);
 // constructor for safety
 Collection::Collection() {
     buildings_ = NULL;      
@@ -23,8 +32,15 @@ Collection::~Collection() {
 }
 
 void Collection::insert(const BCode& bcode, const std::string& name) {
-    Node* temp = new Node();
+    if (findBuilding(bcode) != NULL) {
+        throw BuildingAlreadyInUseException(bcode.code());
+    }
+    if (isWrecked(bcode)) {
+        throw DestroyedBuildingException(bcode.code());
+    }
+
     Building* building = new Building(bcode, name);
+    Node* temp = new Node();
     temp->value = building;
     temp->next = buildings_;
     buildings_ = temp;
@@ -40,11 +56,13 @@ void Collection::remove(const BCode& bcode) {
     
     // replace it with whatever the next pointer is
     if (*indirect != NULL) {
+        //store the building in the list of wreckage
+        wrecked_buildings.push_back((*indirect)->value->bcode().code());
         delete (*indirect)->value;
         *indirect = (*indirect)->next;
     }
     else {
-        throw BuildingDoesNotExist(bcode);
+        throw BuildingNotFoundException(bcode.code());
     }
 }
 
@@ -62,4 +80,9 @@ Building* Collection::findBuilding(const BCode& bcode) const {
     delete temp;
     // return null pointer if building can't be found
     return NULL;
+}
+
+// checks if the given bcode is in the list of destroyed buildings
+bool Collection::isWrecked (const BCode& bcode) {
+    return std::find(std::begin(wrecked_buildings), std::end(wrecked_buildings), bcode.code()) != std::end(wrecked_buildings);
 }

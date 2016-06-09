@@ -61,14 +61,14 @@ int main( int argc, char *argv[] ) {
                     string code;
                     string name;
                     string name2;
-                    source >> code >> name;
-                    getline( source, name2 );
                     try {
+                        source >> code >> name;
+                        getline( source, name2 );
                         buildings.insert( code, name+name2 );
                         map1.addNode( buildings.findBuilding ( code ) );
                     }
-                    catch ( BCode::InvalidFormatException &e ) {
-                        cerr << e.message();
+                    catch ( BaseException &e ) {
+                        cerr << e.message() << endl;
 
                         cerr << "This command results in no changes to the collection of buildings or to maps." << endl;
                     }
@@ -107,6 +107,10 @@ int main( int argc, char *argv[] ) {
     Op op = convertOp( command );
     bool success = false;
 
+    // Error strings
+    const string no_change_map = "This command results in no changes to map";
+    const string no_change = "This command results in no changes to the collection of buildings or to maps";
+
     while ( !cin.eof() ) {
         switch (op) {
 
@@ -138,8 +142,8 @@ int main( int argc, char *argv[] ) {
                         success = true;
                     }
                     catch (BCode::InvalidFormatException &e) {
-                        cerr << e.message();
-                        cout << "Please enter a new building code:" << endl;
+                        cout << e.message() << e.reason() << endl;
+                        cout << "Please enter a new building code: ";
                     }
                 }
                 break;
@@ -147,13 +151,19 @@ int main( int argc, char *argv[] ) {
 
                 // add an existing building to the current map
             case node: {
-                string code;
-                cin >> code;
-                map->addNode( buildings.findBuilding( code ) );
-                string junk;
-                getline( cin, junk );
+                try {
+                    string code;
+                    cin >> code;
+                    map->addNode( buildings.findBuilding( code ) );
+                    string junk;
+                    getline( cin, junk );
+                }
+                catch (BaseException &e) {
+                    cerr << e.message() << endl;
+                    cout << no_change_map << endl;
+                }
                 break;
-            }
+           }
 
                 // find a building in the current map
             case findB: {
@@ -212,21 +222,17 @@ int main( int argc, char *argv[] ) {
                 // remove an existing building from the collection of buildings.  The building also needs to be removed from the two maps, as well as all links involving the building
             case wreckage: {
                 string code;
-                success = false;
-                while (!success && !cin.eof()) {
-                    try {
-                        cin >> code;
-                        map1.removeNode( code );
-                        map2.removeNode( code );
-                        buildings.remove ( code );
-                        string junk;
-                        getline ( cin, junk );
-                        success = true;
-                    }
-                    catch (Collection::BuildingDoesNotExist &e) {
-                        cerr << e.message() << endl;
-                        cerr << "This command results in no changes to the collectio of buildings or to maps." << endl;
-                    }
+                try {
+                    cin >> code;
+                    map1.removeNode( code );
+                    map2.removeNode( code );
+                    buildings.remove ( code );
+                    string junk;
+                    getline ( cin, junk );
+                }
+                catch (BaseException &e) {
+                    cerr << e.message() << endl;
+                    cerr << "This command results in no changes to the collectio of buildings or to maps." << endl;
                 }
                 break;
             }
