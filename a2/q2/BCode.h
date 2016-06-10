@@ -10,17 +10,18 @@ public:
     // Exception handler for BCode
     class InvalidFormatException : public BaseException {
     public:
-        InvalidFormatException (const std::string& code, const std::string& reason);
-        std::string reason() const;
+        InvalidFormatException (const std::string& code, const std::string& reason); // constructor
+        std::string reason() const;                                 // accessor
     private:
-        std::string reason_;
+        std::string reason_;                                        // holds the reason(s) of invalidness
     };
 
-    BCode(const std::string&);                                       // constructor
-    std::string code() const;
+    BCode(const std::string&);                                      // constructor
+    std::string code() const;                                       // accessor
 
 private:
     std::string code_;
+    // for range checks on the length
     static int const min_length_ = 2;
     static int const max_length_ = 3;
 };

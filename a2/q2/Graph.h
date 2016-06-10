@@ -33,14 +33,14 @@ public:
     };
     class NodeNotFoundException {
     public:
-        NodeNotFoundException (const std::string& code) : code_(code) {}
+        NodeNotFoundException (const std::string& code) : code_(code) {} //Exception for node not found
         std::string code() const { return code_; }
     private:
         std::string code_;
     };
     class NodeSelfConnectionException {
     public:
-        NodeSelfConnectionException (const std::string& code)
+        NodeSelfConnectionException (const std::string& code)   // Exception for self connecting nodes
             : code_(code) {}
         std::string code() const { return code_; }
     private:
@@ -48,27 +48,27 @@ public:
     };
     class EdgeException {
     public:
-        EdgeException (const std::string& node1, const std::string& node2)
-            : node1_(node1), node2_(node2) {}
-        std::string node1() const { return node1_; }
-        std::string node2() const { return node2_; }
+        EdgeException (const std::string& node1, const std::string& node2)  //Base exception class for edge related
+            : node1_(node1), node2_(node2) {}                               //exceptions
+        std::string node1() const { return node1_; }                        // accessor
+        std::string node2() const { return node2_; }                        // accessor
     private:
         std::string node1_;
         std::string node2_;
     };
     class NoEdgeFoundException : public EdgeException {
     public:
-        NoEdgeFoundException (const std::string& node1, const std::string& node2)
+        NoEdgeFoundException (const std::string& node1, const std::string& node2)//exception for edge not found
             : EdgeException(node1, node2) {}
     };
     class EdgeAlreadyExistsException : public EdgeException {
     public:
-        EdgeAlreadyExistsException (const std::string& node1, const std::string& node2)
+        EdgeAlreadyExistsException (const std::string& node1, const std::string& node2)//exception for edge already exists
             : EdgeException(node1, node2) {}
     };
     class ConnectorTypeException : public BaseException {
     public:
-        ConnectorTypeException (const std::string& connector);
+        ConnectorTypeException (const std::string& connector);               // exception for invalid connector type
     };
 
 
@@ -102,10 +102,10 @@ private:
     Node* nodes_;                                               // holds the root of nodes list
     static std::array<std::string, 3> connectors;
     // helper functions, function signatures and names are self documenting
-    Node* findNode(const std::string&) const;
-    void addEdge(Node*, Node*, const std::string&);
-    void removeEdge(Node*, const std::string&);
-    void removeNode(Node*);
+    Node* findNode(const std::string&) const;                   // find node given the bcode
+    void addEdge(Node*, Node*, const std::string&);             // add edge given the nodes and connector
+    void removeEdge(Node*, const std::string&);                 // remove edge given the node and destination bcode
+    void removeNode(Node*);                                     // remove node given the node pointer
     void removePaths(Node*);                                    // remove all the paths attached to a node
     bool findPath(CodeList*, Node*, const std::string&) const;   // recursive function for depth-first search
 };

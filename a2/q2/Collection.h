@@ -8,15 +8,15 @@ public:
     // Exception classes for various errors handled through Collection
     class BuildingNotFoundException : public BaseException {
     public:
-        BuildingNotFoundException (const std::string&); // Exception for no building found
+        BuildingNotFoundException (const std::string&);     // Exception for no building found
     };
     class BuildingAlreadyInUseException : public BaseException {
     public:
-        BuildingAlreadyInUseException (const std::string&);      // Exception for already used building
+        BuildingAlreadyInUseException (const std::string&); // Exception for already used building
     };
     class DestroyedBuildingException : public BaseException {
     public:
-        DestroyedBuildingException (const std::string&);// Exception for former buildings
+        DestroyedBuildingException (const std::string&);    // Exception for former buildings
     };
 
     Collection();                                   // constructor
@@ -32,5 +32,5 @@ private:
     };
     Node* buildings_;                                   // stores the linked list node
     static std::vector<std::string> wrecked_buildings;  // stores the list of destroyed buildings
-    static bool isWrecked (const BCode& bcode);   // checks if the given BCode has been destroyed
+    static bool isWrecked (const BCode& bcode);         // checks if the given BCode has been destroyed
 };

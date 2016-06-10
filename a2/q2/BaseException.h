@@ -5,10 +5,10 @@
 
 class BaseException {
 public:
-    BaseException (const std::string&) {}
-    std::string message () const { return message_; }
+    BaseException (const std::string&) {}                   // empty constructor
+    std::string message () const { return message_; }       // accessor
 protected:
-    std::string message_;
+    std::string message_;                                   // buffer for error message
 };
 
 #endif // BASE_EXCEPTION_H_

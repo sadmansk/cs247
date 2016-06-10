@@ -1,10 +1,12 @@
 #include "BCode.h"
 
+// Exception constructor
 BCode::InvalidFormatException::InvalidFormatException(const std::string& code, const std::string& reason) : BaseException(code) {
     message_ = "\nERROR: Building Code \"" + code + "\" has an invalid format.";
     reason_ = reason;
 }
 
+// accessor for exception
 std::string BCode::InvalidFormatException::reason() const {
     return reason_;
 }
@@ -26,6 +28,7 @@ BCode::BCode(const std::string& bcode) {
         }
     }
     if (reason.length() > 0) {
+        // if there is any reason, we throw the exception of invalid formatness
         throw InvalidFormatException(bcode, reason);
     }
 

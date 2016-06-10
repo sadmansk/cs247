@@ -341,10 +341,12 @@ int main( int argc, char *argv[] ) {
                     buildings.remove ( code );
                 }
                 catch (Graph::NodeNotFoundException &e) {
+                    // if we catch exception from map, we still want to remove it from the collection
                     try {
                         buildings.remove (code);
                     }
                     catch (BaseException &f) {
+                        // we catch the building exception here again for safety
                         cout << f.message() << endl;
                         cout << no_change << endl;
                     }

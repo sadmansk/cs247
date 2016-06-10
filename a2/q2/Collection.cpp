@@ -1,5 +1,6 @@
 #include "Collection.h"
 
+// constructor for the different exceptions
 Collection::BuildingNotFoundException::BuildingNotFoundException(const std::string& code) : BaseException(code) {
     message_ = "\nERROR: There is no building with the code \"" + code + "\".";
 }
@@ -12,7 +13,9 @@ Collection::DestroyedBuildingException::DestroyedBuildingException(const std::st
     message_ = "\nERROR: Building Code \"" + code + "\" was used for a former building.";
 }
 
+// static vector to hold the list of destroyed buildings, initialized to be empty
 std::vector<std::string> Collection::wrecked_buildings(0);
+
 // constructor for safety
 Collection::Collection() {
     buildings_ = NULL;      
@@ -32,6 +35,7 @@ Collection::~Collection() {
 }
 
 void Collection::insert(const BCode& bcode, const std::string& name) {
+    // if the building was already used throws exceptions
     if (findBuilding(bcode) != NULL) {
         throw BuildingAlreadyInUseException(bcode.code());
     }
@@ -39,6 +43,7 @@ void Collection::insert(const BCode& bcode, const std::string& name) {
         throw DestroyedBuildingException(bcode.code());
     }
 
+    // insert the building to the list
     Building* building = new Building(bcode, name);
     Node* temp = new Node();
     temp->value = building;
@@ -69,6 +74,7 @@ void Collection::remove(const BCode& bcode) {
         delete temp;
     }
     else {
+        // if it is null, building was not found
         throw BuildingNotFoundException(bcode.code());
     }
 }

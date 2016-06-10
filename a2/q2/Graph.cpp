@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 
+// helper list to contain nodes
 CodeList::CodeList() {
     code_list_ = NULL;
 }
@@ -33,23 +34,26 @@ bool CodeList::findCode(const std::string& code) const {
     return false;
 }
 
+// exception constructor
 Graph::ConnectorTypeException::ConnectorTypeException (const std::string& connector)
    : BaseException(connector) {
     message_ = "\nERROR: There is no building connector of type \"" + connector + "\"."; 
 }
 
+// stores the valid connectors
 std::array<std::string, 3> Graph::connectors = {"bridge", "tunnel", "hall"};
+
 // constructor
 Graph::Graph() {
     nodes_ = NULL;
 }
 
+// destructor
 Graph::~Graph() {
     deleteGraph();
     delete nodes_;
 }
     
-
 Graph::Graph(const Graph& g) {
     // set the nodes list to null if the nodes_ in g are NULL
     if (g.nodes_ == NULL) {
@@ -141,6 +145,8 @@ void Graph::addEdge(std::string code1, std::string code2, std::string connector)
     // store the two nodes corresponding to the bcodes
     Node* node1 = findNode(code1);
     Node* node2 = findNode(code2);
+
+    // checks for exceptions
     if (node1 == NULL) {
         throw NodeNotFoundException(code1);
     }
@@ -189,6 +195,8 @@ void Graph::removeEdge(std::string code1, std::string code2) {
     // store the two nodes corresponding to the bcodes
     Node* node1 = findNode(code1);
     Node* node2 = findNode(code2);
+
+    // check for exceptions
     if (node1 == NULL) {
         throw NodeNotFoundException(code1);
     }
