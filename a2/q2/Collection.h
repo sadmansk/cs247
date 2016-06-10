@@ -31,6 +31,6 @@ private:
         Node* next;
     };
     Node* buildings_;                                   // stores the linked list node
-    static std::vector<std::string> wrecked_buildings;        // stores the list of destroyed buildings
+    static std::vector<std::string> wrecked_buildings;  // stores the list of destroyed buildings
     static bool isWrecked (const BCode& bcode);   // checks if the given BCode has been destroyed
 };

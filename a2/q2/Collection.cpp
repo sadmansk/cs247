@@ -45,6 +45,7 @@ void Collection::insert(const BCode& bcode, const std::string& name) {
     temp->next = buildings_;
     buildings_ = temp;
     temp = NULL;
+    building = NULL;
 }
 
 void Collection::remove(const BCode& bcode) {
@@ -63,7 +64,9 @@ void Collection::remove(const BCode& bcode) {
         //store the building in the list of wreckage
         wrecked_buildings.push_back((*indirect)->value->bcode().code());
         delete (*indirect)->value;
-        *indirect = (*indirect)->next;
+        Node* temp = *indirect;
+        *indirect = temp->next;
+        delete temp;
     }
     else {
         throw BuildingNotFoundException(bcode.code());
